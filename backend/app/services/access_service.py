@@ -14,7 +14,30 @@ class AccessService:
     def require_course_manager(db: Session, course_id: uuid.UUID, user: User) -> Course:
         course = db.query(Course).filter(Course.id == course_id).first()
         if not course:
-            raise NotFoundException("Course not found")
+            if user.role in (UserRole.TEACHER, UserRole.ADMIN):
+                from app.models.user import Teacher
+                teacher_profile = db.query(Teacher).filter(Teacher.id == user.id).first()
+                if not teacher_profile:
+                    teacher_profile = Teacher(
+                        id=user.id,
+                        department="Administration",
+                        title="Instructor",
+                    )
+                    db.add(teacher_profile)
+                    db.flush()
+                course = Course(
+                    id=course_id,
+                    title="Default Course",
+                    description="Default course for slide uploads and exams",
+                    code=f"AUTO_{course_id.hex[:8]}",
+                    teacher_id=user.id,
+                    is_active=True,
+                    max_students=100
+                )
+                db.add(course)
+                db.commit()
+            else:
+                raise NotFoundException("Course not found")
         if user.role != UserRole.ADMIN and course.teacher_id != user.id:
             raise ForbiddenException("You do not manage this course")
         return course
