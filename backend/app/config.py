@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALLOW_TEACHER_REGISTRATION: bool = True
+    REQUIRE_EMAIL_VERIFICATION: bool = True
 
     # CORS
     BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://localhost:8000"]

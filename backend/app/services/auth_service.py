@@ -63,7 +63,7 @@ class AuthService:
             first_name=schema.first_name,
             last_name=schema.last_name,
             role=UserRole.STUDENT,
-            is_verified=True,  # Automatically verified for simplified deployment
+            is_verified=not settings.REQUIRE_EMAIL_VERIFICATION,
             verification_token=verification_token
         )
         db.add(user)
@@ -81,15 +81,16 @@ class AuthService:
         db.commit()
         db.refresh(user)
 
-        # Email Dispatch
-        verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
-        subject = "Подтверждение регистрации"
-        body = f"""
-        <p>Здравствуйте, {user.first_name}!</p>
-        <p>Спасибо за регистрацию. Пожалуйста, подтвердите вашу почту, перейдя по ссылке ниже:</p>
-        <p><a href="{verify_link}">{verify_link}</a></p>
-        """
-        EmailService.send_email(user.email, subject, body)
+        if settings.REQUIRE_EMAIL_VERIFICATION:
+            # Email Dispatch
+            verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
+            subject = "Подтверждение регистрации"
+            body = f"""
+            <p>Здравствуйте, {user.first_name}!</p>
+            <p>Спасибо за регистрацию. Пожалуйста, подтвердите вашу почту, перейдя по ссылке ниже:</p>
+            <p><a href="{verify_link}">{verify_link}</a></p>
+            """
+            EmailService.send_email(user.email, subject, body)
 
         return user
 
@@ -115,7 +116,7 @@ class AuthService:
             first_name=schema.first_name,
             last_name=schema.last_name,
             role=UserRole.TEACHER,
-            is_verified=True,  # Automatically verified for simplified deployment
+            is_verified=not settings.REQUIRE_EMAIL_VERIFICATION,
             verification_token=verification_token
         )
         db.add(user)
@@ -130,15 +131,16 @@ class AuthService:
         db.commit()
         db.refresh(user)
 
-        # Email Dispatch
-        verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
-        subject = "Подтверждение регистрации преподавателя"
-        body = f"""
-        <p>Здравствуйте, {user.first_name}!</p>
-        <p>Ваша учетная запись преподавателя создана. Пожалуйста, подтвердите вашу почту, перейдя по ссылке ниже:</p>
-        <p><a href="{verify_link}">{verify_link}</a></p>
-        """
-        EmailService.send_email(user.email, subject, body)
+        if settings.REQUIRE_EMAIL_VERIFICATION:
+            # Email Dispatch
+            verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
+            subject = "Подтверждение регистрации преподавателя"
+            body = f"""
+            <p>Здравствуйте, {user.first_name}!</p>
+            <p>Спасибо за регистрацию в качестве преподавателя. Пожалуйста, подтвердите вашу почту:</p>
+            <p><a href="{verify_link}">{verify_link}</a></p>
+            """
+            EmailService.send_email(user.email, subject, body)
 
         return user
 
