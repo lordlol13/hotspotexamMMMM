@@ -5,11 +5,12 @@ import {
   Divider, Stack, Chip
 } from "@mui/material";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import SchoolIcon from "@mui/icons-material/School";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import {
+  AssignmentTurnedIn as AssignmentTurnedInIcon,
+  School as SchoolIcon,
+  TrendingUp as TrendingUpIcon
+} from "@mui/icons-material";
 import axios from "axios";
-
 import { useAuth } from "../../App";
 
 interface ExamHistoryItem {

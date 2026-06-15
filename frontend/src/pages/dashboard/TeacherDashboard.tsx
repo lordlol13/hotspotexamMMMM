@@ -7,10 +7,12 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from "recharts";
-import GroupIcon from "@mui/icons-material/Group";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import AssignmentLateIcon from "@mui/icons-material/AssignmentLate";
-import PercentIcon from "@mui/icons-material/Percent";
+import {
+  Group as GroupIcon,
+  CheckCircle as CheckCircleIcon,
+  AssignmentLate as AssignmentLateIcon,
+  Percent as PercentIcon
+} from "@mui/icons-material";
 import axios from "axios";
 
 interface GroupStat {
