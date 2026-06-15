@@ -33,15 +33,17 @@ import {
   FormControlLabel,
   Switch,
 } from "@mui/material";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
-import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import TranslateOutlinedIcon from "@mui/icons-material/TranslateOutlined";
+import {
+  DescriptionOutlined as DescriptionOutlinedIcon,
+  ExitToApp as ExitToAppIcon,
+  PeopleAltOutlined as PeopleAltOutlinedIcon,
+  SchoolOutlined as SchoolOutlinedIcon,
+  EmojiEventsOutlined as EmojiEventsOutlinedIcon,
+  LockOutlined as LockOutlinedIcon,
+  DarkModeOutlined as DarkModeOutlinedIcon,
+  LightModeOutlined as LightModeOutlinedIcon,
+  TranslateOutlined as TranslateOutlinedIcon,
+} from "@mui/icons-material";
 import axios from "axios";
 
 // Add response interceptor to handle token refresh automatically on 401
