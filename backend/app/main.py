@@ -1,6 +1,7 @@
 import logging
 import time
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -11,6 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes import api_router
 from app.config import settings
+from app.core.init_db import init_db
 from app.core.logging import configure_logging
 from app.database import engine
 from app.dependencies import RoleChecker
@@ -20,11 +22,26 @@ configure_logging(settings.LOG_LEVEL)
 settings.validate_production()
 logger = logging.getLogger("app")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run startup tasks before the application begins serving requests."""
+    logger.info("startup: initialising database defaults")
+    try:
+        init_db()
+        logger.info("startup: database initialisation complete")
+    except Exception:
+        logger.exception("startup: database initialisation failed — continuing anyway")
+    yield
+    # Shutdown tasks (none required at this time)
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.ENABLE_DOCS else None,
     docs_url="/docs" if settings.ENABLE_DOCS else None,
     redoc_url="/redoc" if settings.ENABLE_DOCS else None,
+    lifespan=lifespan,
 )
 
 
