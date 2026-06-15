@@ -1,24 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import OpenSeadragon from "openseadragon";
 import { Box, Paper, ToggleButtonGroup, ToggleButton, Tooltip, IconButton, Button } from "@mui/material";
-import Crop54Icon from "@mui/icons-material/Crop54";
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import PolylineIcon from "@mui/icons-material/Polyline";
-import GestureIcon from "@mui/icons-material/Gesture";
-import EditOffIcon from "@mui/icons-material/EditOff";
-import CloseIcon from "@mui/icons-material/Close";
-import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
-import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
-import TextFieldsIcon from "@mui/icons-material/TextFields";
-import RegionEditor, { RegionShapeType, RegionContentType } from "./RegionEditor";
-import QuizIcon from "@mui/icons-material/Quiz";
-import TouchAppIcon from "@mui/icons-material/TouchApp";
-import InfoIcon from "@mui/icons-material/Info";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import LinkIcon from "@mui/icons-material/Link";
+import {
+  Crop54 as Crop54Icon,
+  RadioButtonUnchecked as RadioButtonUncheckedIcon,
+  Polyline as PolylineIcon,
+  Gesture as GestureIcon,
+  EditOff as EditOffIcon,
+  Close as CloseIcon,
+  HorizontalRule as HorizontalRuleIcon,
+  ArrowRightAlt as ArrowRightAltIcon,
+  TextFields as TextFieldsIcon,
+  Quiz as QuizIcon,
+  TouchApp as TouchAppIcon,
+  Info as InfoIcon,
+  PlayCircle as PlayCircleIcon,
+  VolumeUp as VolumeUpIcon,
+  PictureAsPdf as PictureAsPdfIcon,
+  Link as LinkIcon
+} from "@mui/icons-material";
 import axios from "axios";
+import RegionEditor, { RegionShapeType, RegionContentType } from "./RegionEditor";
 
 interface DrawingOverlayProps {
   slideId: string;

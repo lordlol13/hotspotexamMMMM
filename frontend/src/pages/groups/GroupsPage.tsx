@@ -4,11 +4,13 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, Card, CardContent,
   IconButton, Tooltip
 } from "@mui/material";
-import GroupIcon from "@mui/icons-material/Group";
-import AddIcon from "@mui/icons-material/Add";
-import SchoolIcon from "@mui/icons-material/School";
-import BookIcon from "@mui/icons-material/Book";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import {
+  Group as GroupIcon,
+  Add as AddIcon,
+  School as SchoolIcon,
+  Book as BookIcon,
+  DeleteOutline as DeleteOutlineIcon
+} from "@mui/icons-material";
 import { useAuth } from "../../App";
 import { useData } from "../../contexts/DataContext";
 

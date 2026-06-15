@@ -4,10 +4,12 @@ import {
   TableContainer, TableRow, TableHead, CircularProgress, Alert, Grid, Card, CardContent, Chip
 } from "@mui/material";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import StarsIcon from "@mui/icons-material/Stars";
-import TimelineIcon from "@mui/icons-material/Timeline";
+import {
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  ErrorOutline as ErrorOutlineIcon,
+  Stars as StarsIcon,
+  Timeline as TimelineIcon
+} from "@mui/icons-material";
 import axios from "axios";
 import { useAuth, UserProfileDialog } from "../../App";
 import { useData } from "../../contexts/DataContext";

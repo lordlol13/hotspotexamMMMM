@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Paper, Typography, Box } from "@mui/material";
-import TimerIcon from "@mui/icons-material/Timer";
+import { Timer as TimerIcon } from "@mui/icons-material";
 
 interface ExamTimerProps {
   durationMinutes: number;

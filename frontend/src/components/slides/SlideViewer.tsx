@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import OpenSeadragon from "openseadragon";
 import { Box, CircularProgress, Typography, IconButton, Paper, Tooltip } from "@mui/material";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import HomeIcon from "@mui/icons-material/Home";
+import {
+  ZoomIn as ZoomInIcon,
+  ZoomOut as ZoomOutIcon,
+  Fullscreen as FullscreenIcon,
+  Home as HomeIcon
+} from "@mui/icons-material";
 import axios from "axios";
 import DrawingOverlay from "./DrawingOverlay";
 

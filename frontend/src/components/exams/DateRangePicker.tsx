@@ -12,10 +12,12 @@ import {
   Divider,
   Chip
 } from "@mui/material";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import {
+  CalendarToday as CalendarTodayIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon,
+  AccessTime as AccessTimeIcon
+} from "@mui/icons-material";
 
 interface DateRangePickerProps {
   startTime: string;

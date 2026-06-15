@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Button, AppBar, Toolbar, Typography, IconButton } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import SlideViewer from "../../components/slides/SlideViewer";
 import { useAuth } from "../../App";
 

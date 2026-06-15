@@ -6,26 +6,28 @@ import {
   CircularProgress, Alert, InputLabel, FormControl, Stack, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress, Paper
 } from "@mui/material";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import GetAppIcon from "@mui/icons-material/GetApp";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
-import GroupIcon from "@mui/icons-material/Group";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import SchoolIcon from "@mui/icons-material/School";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import FlagIcon from "@mui/icons-material/Flag";
+import {
+  PlayArrow as PlayArrowIcon,
+  Add as AddIcon,
+  Edit as EditIcon,
+  CalendarToday as CalendarTodayIcon,
+  GetApp as GetAppIcon,
+  DeleteOutline as DeleteOutlineIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  WarningAmber as WarningAmberIcon,
+  QuestionMark as QuestionMarkIcon,
+  Group as GroupIcon,
+  FileUpload as FileUploadIcon,
+  Close as CloseIcon,
+  Delete as DeleteIcon,
+  DragIndicator as DragIndicatorIcon,
+  TrendingUp as TrendingUpIcon,
+  School as SchoolIcon,
+  AssignmentTurnedIn as AssignmentTurnedInIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  Flag as FlagIcon
+} from "@mui/icons-material";
 import axios from "axios";
 
 import { useAuth } from "../../App";

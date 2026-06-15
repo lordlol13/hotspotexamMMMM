@@ -5,10 +5,12 @@ import {
   FormControlLabel, IconButton, List, ListItem, ListItemSecondaryAction,
   CircularProgress, Tooltip
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import {
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  AttachFile as AttachFileIcon,
+  PictureAsPdf as PictureAsPdfIcon
+} from "@mui/icons-material";
 import axios from "axios";
 
 export type RegionShapeType = "rectangle" | "circle" | "polygon" | "freehand" | "line" | "arrow" | "text";

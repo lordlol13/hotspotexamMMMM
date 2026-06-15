@@ -4,8 +4,10 @@ import {
   TableContainer, TableRow, TableHead, CircularProgress, Alert,
   TextField, MenuItem, Select, FormControl, Avatar
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import {
+  Search as SearchIcon,
+  MailOutline as MailOutlineIcon
+} from "@mui/icons-material";
 import { useAuth, UserProfileDialog } from "../../App";
 import { useData } from "../../contexts/DataContext";
 

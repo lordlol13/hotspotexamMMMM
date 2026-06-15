@@ -9,16 +9,18 @@ import {
   Divider, LinearProgress, IconButton, Stack, Chip, ToggleButtonGroup, ToggleButton,
   InputLabel, Select, MenuItem
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import LaunchIcon from "@mui/icons-material/Launch";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import CloseIcon from "@mui/icons-material/Close";
-import FlagIcon from "@mui/icons-material/Flag";
-import OutlinedFlagIcon from "@mui/icons-material/OutlinedFlag";
+import {
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  CancelOutlined as CancelOutlinedIcon,
+  InfoOutlined as InfoOutlinedIcon,
+  Launch as LaunchIcon,
+  EmojiEvents as EmojiEventsIcon,
+  Close as CloseIcon,
+  Flag as FlagIcon,
+  OutlinedFlag as OutlinedFlagIcon
+} from "@mui/icons-material";
 import axios from "axios";
 
 import ExamTimer from "../../components/exams/ExamTimer";
