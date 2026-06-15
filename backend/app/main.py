@@ -27,6 +27,15 @@ app = FastAPI(
     redoc_url="/redoc" if settings.ENABLE_DOCS else None,
 )
 
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    )
+
 
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
@@ -71,15 +80,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("unhandled_error", extra={"method": request.method, "path": request.url.path})
     return JSONResponse(status_code=500, content={"error": {"code": "internal_error", "message": "Internal server error"}})
 
-
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
-    )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
