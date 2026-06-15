@@ -16,7 +16,6 @@ export const GroupsPage: React.FC = () => {
   const { user } = useAuth();
   const { groups, students, addGroup, deleteGroup, loading, error } = useData();
 
-  // Dialog state
   const [open, setOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCourse, setNewGroupCourse] = useState("Анатомия и гистология");
@@ -36,7 +35,6 @@ export const GroupsPage: React.FC = () => {
     setDeleteConfirmId(null);
   };
 
-  // Подсчёт студентов в каждой группе из контекста
   const getStudentCount = (groupName: string) => {
     return students.filter(s => s.group_name === groupName).length;
   };
@@ -53,7 +51,7 @@ export const GroupsPage: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", py: 2 }}>
-      {/* Edge-aligned Header and Actions */}
+      {}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
           {isTeacher ? "Студенческие группы" : "Моя академическая группа"}
@@ -203,7 +201,7 @@ export const GroupsPage: React.FC = () => {
         </Card>
       )}
 
-      {/* Create Group Dialog */}
+      {}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 800, fontSize: "1.15rem", pb: 1 }}>Создание новой группы</DialogTitle>
         <DialogContent>
@@ -249,7 +247,7 @@ export const GroupsPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {}
       <Dialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 800, fontSize: "1.1rem" }}>Удалить группу?</DialogTitle>
         <DialogContent>

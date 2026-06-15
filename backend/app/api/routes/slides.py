@@ -62,7 +62,7 @@ def get_slide_dzi(slide_id: uuid.UUID, db: Session = Depends(get_db), current_us
     Get Deep Zoom Image (DZI) XML descriptor for OpenSeadragon viewer.
     """
     slide = SlideService.get_slide(db, slide_id)
-    # Open processor to generate XML description dynamically
+
     from app.utils.svs_processor import UnifiedSlideProcessor
     processor = UnifiedSlideProcessor(slide.file_path)
     xml_content = processor.get_dzi_xml()

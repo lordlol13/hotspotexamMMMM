@@ -18,13 +18,12 @@ class Course(Base):
     max_students: Mapped[int] = mapped_column(Integer, default=100, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     teacher: Mapped["Teacher"] = relationship("Teacher", back_populates="courses")
     groups: Mapped[List["Group"]] = relationship(
         "Group",
@@ -32,17 +31,17 @@ class Course(Base):
         back_populates="courses"
     )
     enrollments: Mapped[List["CourseEnrollment"]] = relationship(
-        "CourseEnrollment", 
-        back_populates="course", 
+        "CourseEnrollment",
+        back_populates="course",
         cascade="all, delete-orphan"
     )
     slides: Mapped[List["Slide"]] = relationship(
-        "Slide", 
-        back_populates="course", 
+        "Slide",
+        back_populates="course",
         cascade="all, delete-orphan"
     )
     exams: Mapped[List["Exam"]] = relationship(
-        "Exam", 
-        back_populates="course", 
+        "Exam",
+        back_populates="course",
         cascade="all, delete-orphan"
     )

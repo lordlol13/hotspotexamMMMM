@@ -44,25 +44,21 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
 }) => {
   const [drawMode, setDrawMode] = useState<RegionShapeType | "view">("view");
   const [regions, setRegions] = useState<any[]>([]);
-  
-  // Drawing states
+
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentPoints, setCurrentPoints] = useState<{ x: number; y: number }[]>([]);
-  
-  // SVG overlay rendering states (scaled screen coordinates of shapes)
+
   const [scaledRegions, setScaledRegions] = useState<any[]>([]);
   const [activeDrawingShape, setActiveDrawingShape] = useState<any | null>(null);
   const [scaledSelectedPoint, setScaledSelectedPoint] = useState<{ x: number; y: number } | null>(null);
 
-  // Configuration modal states
   const [editorOpen, setEditorOpen] = useState(false);
   const [lastGeometry, setLastGeometry] = useState<any>(null);
   const [contentType, setContentType] = useState<RegionContentType>("explanation");
 
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // 1. Fetch existing regions for slide
   const fetchRegions = () => {
     if (highlightRegion || !isTeacher) {
       setRegions([]);
@@ -79,7 +75,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
     fetchRegions();
   }, [slideId, highlightRegion, isTeacher]);
 
-  // 2. Synchronize drawn coordinates with OpenSeadragon's pan/zoom coordinates
   const updateScaledRegions = () => {
     if (!viewer) {
       setScaledRegions([]);
@@ -118,13 +113,12 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
       let scaledGeom: any = {};
 
       if (region.region_type === "rectangle") {
-        // Convert percentages back to image pixels
+
         const imgX = (geom.x / 100) * slideWidth;
         const imgY = (geom.y / 100) * slideHeight;
         const imgW = (geom.w / 100) * slideWidth;
         const imgH = (geom.h / 100) * slideHeight;
 
-        // Convert image points to screen pixels directly by converting (X, Y) and (X+W, Y+H)
         const screenPt1 = viewer.viewport.viewportToViewerElementCoordinates(
           viewer.viewport.imageToViewportCoordinates(new OpenSeadragon.Point(imgX, imgY))
         );
@@ -143,7 +137,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         const imgCY = (geom.cy / 100) * slideHeight;
         const imgR = (geom.r / 100) * slideWidth;
 
-        // Convert center and edge points to screen pixels directly
         const screenPtCenter = viewer.viewport.viewportToViewerElementCoordinates(
           viewer.viewport.imageToViewportCoordinates(new OpenSeadragon.Point(imgCX, imgCY))
         );
@@ -212,7 +205,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
 
     updateScaledRegions();
 
-    // Hook into OSD event loop to update positions on zoom, pan, or resize
     viewer.addHandler("animation", updateScaledRegions);
     viewer.addHandler("canvas-drag", updateScaledRegions);
     viewer.addHandler("canvas-scroll", updateScaledRegions);
@@ -226,11 +218,9 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
     };
   }, [viewer, regions, highlightRegion, slideWidth, slideHeight, selectedPoint]);
 
-  // 3. Coordinate drawing logic
   const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
     if (drawMode === "view" || !viewer || !svgRef.current) return;
-    
-    // Get mouse coords relative to SVG layer
+
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -253,16 +243,16 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         setStartPoint({ x, y });
         setCurrentPoints([{ x, y }]);
       } else {
-        // Drawing is already in progress, so we check if click is close to the start point
+
         if (startPoint) {
           const dist = Math.sqrt((x - startPoint.x) ** 2 + (y - startPoint.y) ** 2);
           if (dist < 15 && currentPoints.length >= 3) {
-            // Close the polygon
+
             finishPolygon();
             return;
           }
         }
-        // Add point
+
         setCurrentPoints((prev) => [...prev, { x, y }]);
       }
       return;
@@ -308,7 +298,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         points: [...currentPoints, { x, y }]
       });
     } else if (drawMode === "polygon") {
-      // Temporary draw line to current cursor
+
       setActiveDrawingShape({
         type: "polygon",
         points: [...currentPoints, { x, y }]
@@ -340,15 +330,13 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
     const y = e.clientY - rect.top;
 
     if (drawMode === "polygon") {
-      // In polygon mode, mouse clicks (down/up) are handled in handleMouseDown
-      // to avoid duplicating points.
+
       return;
     }
 
     setIsDrawing(false);
     setActiveDrawingShape(null);
 
-    // Save drawn geometry into percentage coordinates
     if (drawMode !== "view") {
       const finalGeom = calculatePercentageGeometry(drawMode, startPoint, x, y, currentPoints);
       setLastGeometry(finalGeom);
@@ -357,7 +345,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
   };
 
   const finishPolygon = () => {
-    // Deduplicate consecutive or very close points (especially from double click)
+
     let pts = [...currentPoints];
     while (pts.length > 1) {
       const last = pts[pts.length - 1];
@@ -392,24 +380,22 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
     }
   };
 
-  // Convert pixel dimensions back to slide percentages
   const calculatePercentageGeometry = (
-    mode: RegionShapeType, 
-    start: { x: number; y: number } | null, 
-    endX: number, 
+    mode: RegionShapeType,
+    start: { x: number; y: number } | null,
+    endX: number,
     endY: number,
     points: { x: number; y: number }[]
   ) => {
     if (!viewer) return null;
 
     if (mode === "rectangle" && start) {
-      // Get pixel delta
+
       const pX = Math.min(start.x, endX);
       const pY = Math.min(start.y, endY);
       const pW = Math.abs(start.x - endX);
       const pH = Math.abs(start.y - endY);
 
-      // Convert two diagonal screen points to image coordinates directly
       const imgPt1 = viewer.viewport.viewportToImageCoordinates(
         viewer.viewport.viewerElementToViewportCoordinates(new OpenSeadragon.Point(pX, pY))
       );
@@ -425,7 +411,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
       };
     } else if (mode === "circle" && start) {
       const radiusPx = Math.sqrt((start.x - endX) ** 2 + (start.y - endY) ** 2);
-      
+
       const imgPtCenter = viewer.viewport.viewportToImageCoordinates(
         viewer.viewport.viewerElementToViewportCoordinates(new OpenSeadragon.Point(start.x, start.y))
       );
@@ -485,18 +471,18 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
 
   return (
     <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 10, pointerEvents: "none" }}>
-      {/* 1. Interactive Drawing Control Panel */}
+      {}
       {isTeacher && (
         <Box sx={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, pointerEvents: "auto" }}>
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 0.5, 
-              bgcolor: "#ffffff", 
-              border: "1px solid #e2e8f0", 
-              borderRadius: "8px", 
-              display: "flex", 
-              gap: 0.5 
+          <Paper
+            elevation={3}
+            sx={{
+              p: 0.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              display: "flex",
+              gap: 0.5
             }}
           >
             <ToggleButtonGroup
@@ -568,7 +554,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
                 </Tooltip>
               </ToggleButton>
             </ToggleButtonGroup>
-            
+
             {drawMode === "polygon" && isDrawing && (
               <Button size="small" variant="contained" color="success" onClick={finishPolygon} sx={{ ml: 1, borderRadius: "6px" }}>
                 Готово
@@ -578,19 +564,19 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         </Box>
       )}
 
-      {/* 1.5. Vertical Content Type Sidebar (Right side) */}
+      {}
       {isTeacher && (
         <Box sx={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", zIndex: 100, pointerEvents: "auto" }}>
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 0.5, 
-              bgcolor: "#ffffff", 
-              border: "1px solid #e2e8f0", 
-              borderRadius: "8px", 
-              display: "flex", 
+          <Paper
+            elevation={3}
+            sx={{
+              p: 0.5,
+              bgcolor: "#ffffff",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              display: "flex",
               flexDirection: "column",
-              gap: 0.5 
+              gap: 0.5
             }}
           >
             <ToggleButtonGroup
@@ -660,7 +646,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         </Box>
       )}
 
-      {/* 2. Interactive SVG Canvas Overlay Layer */}
+      {}
       <svg
         ref={svgRef}
         style={{
@@ -700,12 +686,12 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           </marker>
         </defs>
 
-        {/* Render Existing Hotspot Regions */}
+        {}
         {scaledRegions.map((region) => {
           const isView = drawMode === "view";
           return (
-            <g 
-              key={region.id} 
+            <g
+              key={region.id}
               style={{ pointerEvents: isView ? "auto" : "none", cursor: "pointer" }}
               onClick={() => {
                 if (isView && !highlightRegion) {
@@ -807,7 +793,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
                 </g>
               )}
 
-              {/* Delete button wrapper for teachers on view mode */}
+              {}
               {isTeacher && isView && (
                 <foreignObject
                   x={
@@ -835,8 +821,8 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
                         handleDeleteRegion(region.id);
                       }
                     }}
-                    sx={{ 
-                      bgcolor: "background.paper", 
+                    sx={{
+                      bgcolor: "background.paper",
                       color: "error.main",
                       boxShadow: 2,
                       p: 0.5,
@@ -851,7 +837,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           );
         })}
 
-        {/* Render Currently Active Drawing Preview Shape */}
+        {}
         {activeDrawingShape && (
           <g>
             {activeDrawingShape.type === "rectangle" && (
@@ -936,7 +922,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           </g>
         )}
 
-        {/* Render Student Selected Click Target Marker */}
+        {}
         {scaledSelectedPoint && (
           <g>
             <circle
@@ -959,7 +945,7 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         )}
       </svg>
 
-      {/* 3. Configuration Modal Dialog */}
+      {}
       <RegionEditor
         open={editorOpen}
         slideId={slideId}

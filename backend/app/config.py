@@ -9,12 +9,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
     ENABLE_DOCS: bool = True
-    
-    # Database Configuration
-    # Railway provides DATABASE_URL, local dev can override it.
+
     DATABASE_URL: str = "postgresql://emergent:emergent_pass@localhost:5432/emergent_db"
 
-    # Security
     JWT_SECRET: str = "secret-key-change-me-in-production-super-long-hex-string"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
@@ -22,7 +19,6 @@ class Settings(BaseSettings):
     ALLOW_TEACHER_REGISTRATION: bool = True
     REQUIRE_EMAIL_VERIFICATION: bool = True
 
-    # CORS
     BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://localhost:8000"]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
@@ -34,7 +30,6 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    # File Storage
     UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
     MAX_SLIDE_UPLOAD_BYTES: int = 20 * 1024 * 1024 * 1024
     MAX_MEDIA_UPLOAD_BYTES: int = 100 * 1024 * 1024
@@ -43,13 +38,11 @@ class Settings(BaseSettings):
     DB_MAX_OVERFLOW: int = 20
     DB_POOL_RECYCLE_SECONDS: int = 1800
 
-    # Initial Admin Seeding
     ADMIN_EMAIL: str = "admin@edu.ru"
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str = "admin123"
     ADMIN_FULL_NAME: str = "System Admin"
-    
-    # SMTP Email Configuration
+
     SMTP_HOST: str = "127.0.0.1"
     SMTP_PORT: int = 1025
     SMTP_USER: str = ""

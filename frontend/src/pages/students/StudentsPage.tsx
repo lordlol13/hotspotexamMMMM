@@ -16,7 +16,6 @@ export const StudentsPage: React.FC = () => {
   const [groupFilter, setGroupFilter] = useState("all");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  // Группы для фильтра — берутся из общего контекста (динамически!)
   const groupNames = groups.map(g => g.name);
 
   const filteredStudents = students.filter(student => {
@@ -47,7 +46,7 @@ export const StudentsPage: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", py: 2 }}>
-      {/* Edge-aligned Header */}
+      {}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
           {isTeacher ? "Студенты и успеваемость" : "Мои одногруппники"}
@@ -60,7 +59,7 @@ export const StudentsPage: React.FC = () => {
         </Alert>
       )}
 
-      {/* Filter panel */}
+      {}
       <Box sx={{ display: "flex", gap: 2, mb: 3.5, flexWrap: "wrap", alignItems: "center" }}>
         <TextField
           placeholder="Поиск по имени или email..."
@@ -116,10 +115,10 @@ export const StudentsPage: React.FC = () => {
                         <Avatar sx={{ width: 34, height: 34, bgcolor: "#eceff1", color: "#475569", fontSize: "0.85rem", fontWeight: 700, border: "1px solid #cbd5e1" }}>
                           {initials}
                         </Avatar>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            fontWeight: 700, 
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 700,
                             color: "#0f172a",
                             cursor: "pointer",
                             "&:hover": { color: "#0040b0", textDecoration: "underline" }
@@ -180,7 +179,7 @@ export const StudentsPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* User Profile Dialog */}
+      {}
       <UserProfileDialog userId={selectedUserId} open={!!selectedUserId} onClose={() => setSelectedUserId(null)} />
     </Box>
   );

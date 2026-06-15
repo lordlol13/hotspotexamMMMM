@@ -14,9 +14,8 @@ class SlideViewLog(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     viewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    zoom_levels_used: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)  # List/dict of zoom level engagement
-    regions_viewed: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)    # Coordinates student focused on
+    zoom_levels_used: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    regions_viewed: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
 
-    # Relationships
     slide: Mapped["Slide"] = relationship("Slide", back_populates="slide_view_logs")
     user: Mapped["User"] = relationship("User", back_populates="slide_view_logs")

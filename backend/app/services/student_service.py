@@ -7,7 +7,6 @@ from app.models.user import Student, User
 from app.models.group import Group
 from app.models.enums import UserRole
 
-
 class StudentService:
 
     @staticmethod
@@ -25,7 +24,7 @@ class StudentService:
         for student, user, group in students:
             email = user.email
             student_code = student.student_code or ""
-            
+
             if current_user and current_user.role == UserRole.STUDENT and user.is_private and user.id != current_user.id:
                 email = "hidden@private.local"
                 student_code = "[Скрыто]"

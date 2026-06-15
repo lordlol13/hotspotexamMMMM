@@ -27,7 +27,7 @@ class SlideService:
         slide_dir = cls.get_slide_dir(slide_id)
         ext = os.path.splitext(file.filename)[1].lower()
         file_path = os.path.join(slide_dir, f"original{ext}")
-        
+
         total = 0
         with open(file_path, "wb") as buffer:
             while chunk := file.file.read(1024 * 1024):
@@ -37,7 +37,7 @@ class SlideService:
                     os.remove(file_path)
                     raise BadRequestException("Slide exceeds configured upload limit")
                 buffer.write(chunk)
-            
+
         return file_path
 
     @classmethod
@@ -55,28 +55,25 @@ class SlideService:
             if not slide:
                 return
             processor = UnifiedSlideProcessor(slide.file_path)
-            
-            # Extract metadata
+
             slide.width = processor.width
             slide.height = processor.height
             slide.mpp = processor.mpp
             slide.objective_power = processor.objective_power
-            
-            # Generate and save thumbnail
+
             thumbnail = processor.generate_thumbnail(max_width=1024)
             thumbnail_dir = cls.get_slide_dir(slide_id)
             thumbnail_path = os.path.join(thumbnail_dir, "thumbnail.jpg")
             thumbnail.save(thumbnail_path, "JPEG", quality=85)
-            
-            # Update slide record
+
             slide.thumbnail_path = thumbnail_path
-            # We construct a virtual dzi_path pointing to our API route
+
             slide.dzi_path = f"{settings.API_V1_STR}/slides/{slide_id}/dzi"
             slide.is_processed = True
-            
+
             db.commit()
         except Exception as e:
-            # If processing fails, log it and keep is_processed = False
+
             import logging
             logger = logging.getLogger("app.services.slide")
             logger.error(f"Failed to process slide {slide_id}: {e}")
@@ -90,11 +87,11 @@ class SlideService:
 
     @classmethod
     def upload_slide(
-        cls, 
-        db: Session, 
-        title: str, 
-        description: Optional[str], 
-        course_id: uuid.UUID, 
+        cls,
+        db: Session,
+        title: str,
+        description: Optional[str],
+        course_id: uuid.UUID,
         user_id: uuid.UUID,
         file: UploadFile,
         background_tasks: BackgroundTasks
@@ -103,7 +100,7 @@ class SlideService:
         Handle upload and register a slide in the database.
         Fires metadata extraction as a background task.
         """
-        # Validate format
+
         ext = os.path.splitext(file.filename)[1].lower()
         allowed_exts = [
             ".svs", ".tiff", ".tif", ".ndpi", ".vms", ".bif", ".mrxs",
@@ -112,10 +109,8 @@ class SlideService:
         if ext not in allowed_exts:
             raise BadRequestException(f"Unsupported file format. Supported: {', '.join(allowed_exts)}")
 
-        # Create base slide DB record
         slide_id = uuid.uuid4()
-        
-        # Save file to disk
+
         file_path = cls.save_slide_file(slide_id, file)
 
         slide = Slide(
@@ -128,12 +123,11 @@ class SlideService:
             uploaded_by=user_id,
             is_processed=False
         )
-        
+
         db.add(slide)
         db.commit()
         db.refresh(slide)
 
-        # Process metadata and thumbnail asynchronously
         background_tasks.add_task(cls.process_slide, slide_id, db)
 
         return slide
@@ -152,12 +146,11 @@ class SlideService:
     @classmethod
     def delete_slide(cls, db: Session, slide_id: uuid.UUID):
         slide = cls.get_slide(db, slide_id)
-        
-        # Clean up files from filesystem
+
         slide_dir = cls.get_slide_dir(slide_id)
         if os.path.exists(slide_dir):
             shutil.rmtree(slide_dir)
-            
+
         db.delete(slide)
         db.commit()
         return True
@@ -184,10 +177,9 @@ class SlideService:
         processor = UnifiedSlideProcessor(slide.file_path)
         try:
             tile_image = processor.get_tile(level, col, row)
-            
-            # Convert tile to bytes (JPEG format)
+
             img_byte_arr = BytesIO()
-            # If RGBA (e.g. transparent PNG), convert to RGB to save as JPEG
+
             if tile_image.mode == "RGBA":
                 tile_image = tile_image.convert("RGB")
             tile_image.save(img_byte_arr, format="JPEG", quality=85, optimize=True)

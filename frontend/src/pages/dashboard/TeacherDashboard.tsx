@@ -13,7 +13,6 @@ import AssignmentLateIcon from "@mui/icons-material/AssignmentLate";
 import PercentIcon from "@mui/icons-material/Percent";
 import axios from "axios";
 
-/* ───────── Interfaces ───────── */
 interface GroupStat {
   group_name: string;
   course_title: string;
@@ -51,9 +50,8 @@ interface TeacherAnalytics {
   question_difficulty: QuestionDifficulty[];
 }
 
-const COLORS = ["#10b981", "#ef4444"]; // Green for Pass, Red for Fail
+const COLORS = ["#10b981", "#ef4444"];
 
-/* ───────── Helpers ───────── */
 const getDifficultyColor = (pct: number): string => {
   if (pct < 50) return "#ef4444";
   if (pct <= 75) return "#f59e0b";
@@ -73,7 +71,6 @@ const getMedalEmoji = (rank: number): string => {
   return `#${rank}`;
 };
 
-/* ───────── Custom Recharts Tooltip ───────── */
 const GlassTooltipContent = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
@@ -99,9 +96,6 @@ const GlassTooltipContent = ({ active, payload, label }: any) => {
   );
 };
 
-
-
-/* ───────── KPI Card ───────── */
 interface KpiCardProps {
   label: string;
   value: string;
@@ -139,9 +133,6 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, accent, bgColor, icon }
   </Card>
 );
 
-/* ═══════════════════════════════════════════
-   Main Component
-   ═══════════════════════════════════════════ */
 export const TeacherDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<TeacherAnalytics | null>(null);
@@ -158,7 +149,7 @@ export const TeacherDashboard: React.FC = () => {
         console.error(err);
         if (!silent) {
           setError("Could not retrieve live analytics. Rendering sandbox demo mode.");
-          // Fallback mockup data
+
           setData({
             group_statistics: [
               {
@@ -248,7 +239,7 @@ export const TeacherDashboard: React.FC = () => {
     fetchTeacherAnalytics(false);
     const timer = setInterval(() => {
       fetchTeacherAnalytics(true);
-    }, 10000); // Poll every 10 seconds silently
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -272,7 +263,7 @@ export const TeacherDashboard: React.FC = () => {
 
   return (
     <Box>
-      {/* ──── Header ──── */}
+      {}
       <Box mb={4}>
         <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, color: "#0f172a" }}>
           Панель преподавателя
@@ -288,7 +279,7 @@ export const TeacherDashboard: React.FC = () => {
         </Alert>
       )}
 
-      {/* ──── KPI Cards ──── */}
+      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <KpiCard
@@ -328,9 +319,9 @@ export const TeacherDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* ──── CHARTS PANEL ──── */}
+      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Pass vs Fail Ratio */}
+        {}
         <Grid item xs={12} md={5}>
           <Card sx={{ p: 2.5, height: "100%", boxSizing: "border-box" }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
@@ -370,7 +361,7 @@ export const TeacherDashboard: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Group Averages */}
+        {}
         <Grid item xs={12} md={7}>
           <Card sx={{ p: 2.5, height: "100%", boxSizing: "border-box" }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
@@ -391,9 +382,9 @@ export const TeacherDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* ──── TABLES PANEL ──── */}
+      {}
       <Grid container spacing={3}>
-        {/* Student Leaderboard */}
+        {}
         <Grid item xs={12} md={6}>
           <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
             Рейтинг студентов
@@ -426,7 +417,7 @@ export const TeacherDashboard: React.FC = () => {
           </TableContainer>
         </Grid>
 
-        {/* Question Difficulty */}
+        {}
         <Grid item xs={12} md={6}>
           <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
             Анализ сложности вопросов

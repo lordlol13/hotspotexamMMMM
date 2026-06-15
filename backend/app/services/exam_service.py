@@ -59,7 +59,7 @@ class ExamService:
     @staticmethod
     def add_question(db: Session, exam_id: uuid.UUID, schema: ExamQuestionCreate) -> ExamQuestion:
         exam = ExamService.get_exam(db, exam_id)
-        
+
         question = ExamQuestion(
             exam_id=exam.id,
             question_text=schema.question_text,
@@ -81,7 +81,7 @@ class ExamService:
                     order_index=opt.order_index
                 )
                 db.add(option)
-                
+
         db.commit()
         db.refresh(question)
         return question
@@ -98,30 +98,26 @@ class ExamService:
         if not exam.is_active:
             raise ForbiddenException("Exam is not active/available")
 
-        # Check date boundaries
         now = datetime.now(timezone.utc)
         if exam.start_time and now < exam.start_time:
             raise ForbiddenException("Exam window has not opened yet")
         if exam.end_time and now > exam.end_time:
             raise ForbiddenException("Exam window has closed")
 
-        # Count existing attempts
         attempts_count = db.query(ExamAttempt).filter(
             ExamAttempt.exam_id == exam_id,
             ExamAttempt.student_id == student_id
         ).count()
 
-        # Check retake authorization
         retake = db.query(ExamRetake).filter(
             ExamRetake.exam_id == exam_id,
             ExamRetake.student_id == student_id,
             ExamRetake.is_used == False
         ).first()
 
-        # Enforce limits
         allowed = exam.attempt_limit
         if retake:
-            # Check expiry
+
             if retake.expires_at and now > retake.expires_at:
                 raise ForbiddenException("Teacher-granted retake has expired")
             allowed += retake.allowed_attempts
@@ -129,7 +125,6 @@ class ExamService:
         if attempts_count >= allowed:
             raise ForbiddenException(f"Attempt limit reached. Allowed: {allowed}")
 
-        # Start attempt
         attempt = ExamAttempt(
             exam_id=exam_id,
             student_id=student_id,
@@ -137,11 +132,10 @@ class ExamService:
             started_at=datetime.now(timezone.utc),
             is_graded=False
         )
-        
-        # Consume retake if this uses it
+
         if retake and attempts_count >= exam.attempt_limit:
             retake.is_used = True
-            
+
         db.add(attempt)
         db.commit()
         db.refresh(attempt)
@@ -159,14 +153,12 @@ class ExamService:
             raise BadRequestException("Attempt already submitted")
 
         exam = cls.get_exam(db, attempt.exam_id)
-        
-        # Enforce time limits (allow 60s buffer for network lag)
+
         now = datetime.now(timezone.utc)
         duration_delta = now - attempt.started_at.replace(tzinfo=timezone.utc)
         max_seconds = (exam.duration_minutes * 60) + 60
         if duration_delta.total_seconds() > max_seconds:
-            # Under auto-submit, this is handled on backend check or simply flag overdue.
-            # We accept the submit but can auto-grade whatever answers are submitted
+
             pass
 
         attempt.submitted_at = now
@@ -176,23 +168,20 @@ class ExamService:
         max_possible_score = sum(question.points for question in exam.questions)
         is_fully_graded = True
 
-        # Index question options and correct states for performance
         questions = {q.id: q for q in exam.questions}
-        
-        # Pre-fetch all options for all exam questions in one query to avoid N+1 query loops
+
         all_options = (
             db.query(QuestionOption)
             .filter(QuestionOption.question_id.in_(list(questions.keys())))
             .all()
         )
-        
-        # Group options by question_id
+
         options_by_question = {}
         for opt in all_options:
             if opt.question_id not in options_by_question:
                 options_by_question[opt.question_id] = []
             options_by_question[opt.question_id].append(opt)
-        
+
         answered_question_ids = set()
         for ans in payload.answers:
             question = questions.get(ans.question_id)
@@ -200,47 +189,45 @@ class ExamService:
                 continue
             answered_question_ids.add(ans.question_id)
             points_awarded = 0.0
-            
-            # Auto grading logic based on question type
+
             if question.question_type == QuestionType.SINGLE_CHOICE or question.question_type == QuestionType.TRUE_FALSE:
                 opts = options_by_question.get(question.id, [])
                 correct_opt = next((o for o in opts if o.is_correct), None)
-                
+
                 if correct_opt and ans.selected_option_id == correct_opt.id:
                     points_awarded = question.points
-                    
+
             elif question.question_type == QuestionType.MULTIPLE_CHOICE:
                 opts = options_by_question.get(question.id, [])
                 correct_opts = [o for o in opts if o.is_correct]
                 correct_ids = {opt.id for opt in correct_opts}
-                
-                # Compare selected IDs
+
                 selected_ids = set(ans.selected_option_ids or [])
                 if selected_ids == correct_ids:
                     points_awarded = question.points
-                    
+
             elif question.question_type == QuestionType.SHORT_ANSWER:
                 opts = options_by_question.get(question.id, [])
                 correct_opt = opts[0] if opts else None
-                
+
                 if correct_opt and ans.text_answer:
                     if ans.text_answer.strip().lower() == correct_opt.option_text.strip().lower():
                         points_awarded = question.points
-                        
+
             elif question.question_type == QuestionType.ESSAY:
-                # Essay needs teacher manual grading
+
                 is_fully_graded = False
-                points_awarded = None  # None indicates pending grade
+                points_awarded = None
 
             elif question.question_type == QuestionType.POINT_ON_IMAGE:
-                # Point on Image grading: check if click coord falls inside region geometry
+
                 roi = question.region_of_interest
                 if roi and ans.annotation_data and "x" in ans.annotation_data and "y" in ans.annotation_data:
                     px = ans.annotation_data["x"]
                     py = ans.annotation_data["y"]
                     region_type = roi.get("region_type")
                     geom = roi.get("geometry", {})
-                    
+
                     if region_type == "rectangle":
                         rx = geom.get("x", 0)
                         ry = geom.get("y", 0)
@@ -248,18 +235,18 @@ class ExamService:
                         rh = geom.get("h", 0)
                         if rx <= px <= rx + rw and ry <= py <= ry + rh:
                             points_awarded = question.points
-                            
+
                     elif region_type == "circle":
                         cx = geom.get("cx", 0)
                         cy = geom.get("cy", 0)
                         r = geom.get("r", 0)
                         if ((cx - px) ** 2 + (cy - py) ** 2) ** 0.5 <= r:
                             points_awarded = question.points
-                            
+
                     elif region_type in ["polygon", "freehand"]:
                         poly_pts = geom.get("points", [])
                         if poly_pts:
-                            # Ray casting algorithm
+
                             inside = False
                             n = len(poly_pts)
                             p1x, p1y = poly_pts[0]
@@ -289,7 +276,7 @@ class ExamService:
                             proj_x = x1 + t * (x2 - x1)
                             proj_y = y1 + t * (y2 - y1)
                             dist = ((proj_x - px) ** 2 + (proj_y - py) ** 2) ** 0.5
-                        # Allow within 5.0% tolerance
+
                         if dist <= 5.0:
                             points_awarded = question.points
 
@@ -297,11 +284,10 @@ class ExamService:
                         tx = geom.get("x", 0)
                         ty = geom.get("y", 0)
                         dist = ((tx - px) ** 2 + (ty - py) ** 2) ** 0.5
-                        # Allow within 5.0% tolerance
+
                         if dist <= 5.0:
                             points_awarded = question.points
-                
-            # Create attempt answer record
+
             annotation_data = ans.annotation_data or {}
             if question.question_type == QuestionType.MULTIPLE_CHOICE and ans.selected_option_ids:
                 annotation_data["selected_option_ids"] = [str(uid) for uid in ans.selected_option_ids]
@@ -315,7 +301,7 @@ class ExamService:
                 points_awarded=points_awarded
             )
             db.add(db_answer)
-            
+
             if points_awarded is not None:
                 total_score += points_awarded
 
@@ -336,13 +322,13 @@ class ExamService:
         """
         Authorize a student to retake an exam.
         """
-        # Ensure retake request doesn't overlap with another active retake
+
         active_retake = db.query(ExamRetake).filter(
             ExamRetake.exam_id == schema.exam_id,
             ExamRetake.student_id == schema.student_id,
             ExamRetake.is_used == False
         ).first()
-        
+
         if active_retake:
             raise BadRequestException("Student already has an active/unused retake for this exam")
 
@@ -404,18 +390,18 @@ class ExamService:
             if not has_restrictions:
                 visible_exams.append(exam)
                 continue
-            
+
             is_student_assigned = any(s.id == student_id for s in exam.students)
             if is_student_assigned:
                 visible_exams.append(exam)
                 continue
-                
+
             if group_id:
                 is_group_assigned = any(g.id == group_id for g in exam.groups)
                 if is_group_assigned:
                     visible_exams.append(exam)
                     continue
-                    
+
         return visible_exams
 
     @staticmethod
@@ -434,22 +420,22 @@ class ExamService:
         )
         if not exam:
             return False
-            
+
         has_restrictions = len(exam.groups) > 0 or len(exam.students) > 0
         if not has_restrictions:
             return True
-            
+
         is_student_assigned = any(s.id == student_id for s in exam.students)
         if is_student_assigned:
             return True
-            
+
         from app.models.user import Student
         student = db.query(Student).filter(Student.id == student_id).first()
         if student and student.group_id:
             is_group_assigned = any(g.id == student.group_id for g in exam.groups)
             if is_group_assigned:
                 return True
-                
+
         return False
 
     @classmethod
@@ -459,7 +445,7 @@ class ExamService:
 
         exam = cls.get_exam(db, exam_id)
         update_data = schema.model_dump(exclude_unset=True)
-        
+
         group_ids = update_data.pop("group_ids", None)
         student_ids = update_data.pop("student_ids", None)
 

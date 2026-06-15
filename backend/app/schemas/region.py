@@ -8,9 +8,9 @@ class RegionBase(BaseModel):
     title: str
     description: Optional[str] = None
     region_type: RegionType
-    geometry: Dict[str, Any]  # Stores coordinates in %
+    geometry: Dict[str, Any]
     content_type: Optional[RegionContentType] = None
-    content_data: Optional[Dict[str, Any]] = None  # Holds question options, YouTube links, audio files, etc.
+    content_data: Optional[Dict[str, Any]] = None
 
 class RegionCreate(RegionBase):
     slide_id: uuid.UUID

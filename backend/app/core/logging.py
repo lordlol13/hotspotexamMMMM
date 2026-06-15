@@ -3,7 +3,6 @@ import logging
 import sys
 from datetime import datetime, timezone
 
-
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload = {
@@ -19,7 +18,6 @@ class JsonFormatter(logging.Formatter):
         if record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
         return json.dumps(payload, ensure_ascii=True)
-
 
 def configure_logging(level: str) -> None:
     handler = logging.StreamHandler(sys.stdout)

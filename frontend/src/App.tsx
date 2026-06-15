@@ -46,7 +46,6 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-// Add response interceptor to handle token refresh automatically on 401
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -60,12 +59,10 @@ axios.interceptors.response.use(
           const data = refreshRes.data;
           localStorage.setItem("access_token", data.access_token);
           localStorage.setItem("refresh_token", data.refresh_token);
-          
-          // Update global headers
+
           axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
           originalRequest.headers["Authorization"] = `Bearer ${data.access_token}`;
-          
-          // Retry the original request
+
           return axios(originalRequest);
         } catch (refreshError) {
           console.error("Token refresh interceptor failed:", refreshError);
@@ -89,9 +86,6 @@ const GroupsPage = lazy(() => import("./pages/groups/GroupsPage"));
 const StudentsPage = lazy(() => import("./pages/students/StudentsPage"));
 const GradesPage = lazy(() => import("./pages/grades/GradesPage"));
 
-/* ───────────────────────────────────────────────── */
-/*  Logo Component                                   */
-/* ───────────────────────────────────────────────── */
 export const LogoIcon: React.FC<{ color?: string; style?: React.CSSProperties }> = ({ color = "#0040b0", style }) => (
   <svg
     width="26"
@@ -107,9 +101,6 @@ export const LogoIcon: React.FC<{ color?: string; style?: React.CSSProperties }>
   </svg>
 );
 
-/* ───────────────────────────────────────────────── */
-/*  Auth Context & Provider                          */
-/* ───────────────────────────────────────────────── */
 interface User {
   id: string;
   first_name: string;
@@ -154,9 +145,6 @@ export const useAuth = () => {
   return context;
 };
 
-/* ───────────────────────────────────────────────── */
-/*  LoginPage Component                              */
-/* ───────────────────────────────────────────────── */
 const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToRegister }) => {
   const { login } = useAuth();
   const [email, setEmail] = useState("admin@hotspot.com");
@@ -170,12 +158,12 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
       setError("Пожалуйста, заполните все поля.");
       return;
     }
-    
+
     setSubmitting(true);
     setError(null);
     const res = await login(email, password);
     setSubmitting(false);
-    
+
     if (!res.success) {
       setError(res.error || "Не удалось войти в систему.");
     }
@@ -183,7 +171,7 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
 
   return (
     <Box sx={{ display: "flex", width: "100vw", height: "100vh", bgcolor: "#ffffff" }}>
-      {/* Left panel - 50% split */}
+      {}
       <Box
         sx={{
           display: { xs: "none", md: "flex" },
@@ -258,7 +246,7 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
         <Box sx={{ zIndex: 2 }} />
       </Box>
 
-      {/* Right panel - Form container */}
+      {}
       <Box
         sx={{
           width: { xs: "100%", md: "50%" },
@@ -272,7 +260,7 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
         }}
       >
         <Box sx={{ width: "100%", maxWidth: 380 }}>
-          {/* Custom Вход / Регистрация toggles */}
+          {}
           <Box
             sx={{
               display: "flex",
@@ -428,9 +416,6 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
   );
 };
 
-/* ───────────────────────────────────────────────── */
-/*  RegisterPage Component                           */
-/* ───────────────────────────────────────────────── */
 const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLogin }) => {
   const { register } = useAuth();
   const [email, setEmail] = useState("");
@@ -468,11 +453,10 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
       setError("Пароль должен содержать не менее 10 символов.");
       return;
     }
-    
+
     setSubmitting(true);
     setError(null);
-    
-    // Split name to first/last name
+
     const parts = name.trim().split(/\s+/);
     const firstName = parts[0];
     const lastName = parts.slice(1).join(" ") || (role === "student" ? "Студент" : "Преподаватель");
@@ -489,7 +473,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
 
     const res = await register(payload, role);
     setSubmitting(false);
-    
+
     if (!res.success) {
       setError(res.error || "Не удалось зарегистрироваться.");
     }
@@ -497,7 +481,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
 
   return (
     <Box sx={{ display: "flex", width: "100vw", height: "100vh", bgcolor: "#ffffff" }}>
-      {/* Left panel - 50% split */}
+      {}
       <Box
         sx={{
           display: { xs: "none", md: "flex" },
@@ -572,7 +556,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
         <Box sx={{ zIndex: 2 }} />
       </Box>
 
-      {/* Right panel - Form container */}
+      {}
       <Box
         sx={{
           width: { xs: "100%", md: "50%" },
@@ -587,7 +571,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
         }}
       >
         <Box sx={{ width: "100%", maxWidth: 380, py: 4 }}>
-          {/* Custom Вход / Регистрация toggles */}
+          {}
           <Box
             sx={{
               display: "flex",
@@ -635,7 +619,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </Alert>
             )}
 
-            {/* Role selection toggle */}
+            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 1 }}
@@ -685,7 +669,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </Button>
             </Box>
 
-            {/* Имя */}
+            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -703,7 +687,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               sx={{ mb: 2.5 }}
             />
 
-            {/* Group and Course side-by-side (Students only) */}
+            {}
             {role === "student" ? (
               <>
                 <Box sx={{ display: "flex", gap: 2, mb: 2.5 }}>
@@ -752,7 +736,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
                   </Box>
                 </Box>
 
-                {/* Дополнительно */}
+                {}
                 <Typography
                   variant="body2"
                   sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -772,7 +756,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </>
             ) : (
               <>
-                {/* Предметы для Преподавателя */}
+                {}
                 <Typography
                   variant="body2"
                   sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -792,7 +776,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </>
             )}
 
-            {/* Email */}
+            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -810,7 +794,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               sx={{ mb: 2.5 }}
             />
 
-            {/* Пароль */}
+            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -854,9 +838,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
   );
 };
 
-/* ───────────────────────────────────────────────── */
-/*  Translations & Localization                      */
-/* ───────────────────────────────────────────────── */
 const translations = {
   ru: {
     exams: "Экзамены",
@@ -886,9 +867,6 @@ const translations = {
   }
 };
 
-/* ───────────────────────────────────────────────── */
-/*  ProfileSettingsDialog Component                   */
-/* ───────────────────────────────────────────────── */
 interface ProfileSettingsDialogProps {
   open: boolean;
   onClose: () => void;
@@ -896,8 +874,7 @@ interface ProfileSettingsDialogProps {
 
 const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onClose }) => {
   const { user, updateUser, themeMode, setThemeMode, language, setLanguage, logout } = useAuth();
-  
-  // Profile form states
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -910,19 +887,16 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
   const [department, setDepartment] = useState("");
   const [title, setTitle] = useState("");
   const [studentCode, setStudentCode] = useState("");
-  
-  // Password form states
+
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
-  // UI states
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
 
-  // Initialize fields when user changes or modal opens
   useEffect(() => {
     if (user && open) {
       setFirstName(user.first_name || "");
@@ -932,7 +906,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
       setAddress(user.address || "");
       setIsPrivate(user.is_private || false);
       setHideGrades(user.hide_grades || false);
-      
+
       if (user.role === "student" && user.student_profile) {
         setFaculty(user.student_profile.faculty || "");
         setCourseName(user.student_profile.course_name || "");
@@ -941,8 +915,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         setDepartment(user.teacher_profile.department || "");
         setTitle(user.teacher_profile.title || "");
       }
-      
-      // Clear messages
+
       setError(null);
       setSuccess(null);
       setShowPasswordChange(false);
@@ -954,7 +927,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
     setLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const payload: any = {
         first_name: firstName,
@@ -965,7 +938,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         is_private: isPrivate,
         hide_grades: hideGrades,
       };
-      
+
       if (user?.role === "student") {
         payload.faculty = faculty;
         payload.course_name = courseName;
@@ -973,11 +946,10 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         payload.department = department;
         payload.title = title;
       }
-      
+
       const res = await axios.put("/api/v1/auth/me", payload);
       const updatedUser = res.data;
-      
-      // Update local context state
+
       updateUser({
         first_name: updatedUser.first_name,
         last_name: updatedUser.last_name,
@@ -989,7 +961,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         student_profile: updatedUser.student_profile,
         teacher_profile: updatedUser.teacher_profile,
       });
-      
+
       setSuccess(language === "ru" ? "Профиль успешно сохранен!" : "Profile saved successfully!");
     } catch (err: any) {
       console.error("Failed to update profile", err);
@@ -1006,17 +978,17 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
       setError(language === "ru" ? "Пароли не совпадают!" : "Passwords do not match!");
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       await axios.put("/api/v1/auth/password", {
         old_password: oldPassword,
         new_password: newPassword,
       });
-      
+
       setSuccess(language === "ru" ? "Пароль успешно изменен!" : "Password changed successfully!");
       setOldPassword("");
       setNewPassword("");
@@ -1041,10 +1013,10 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
     : "ПР";
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="md" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
       fullWidth
       PaperProps={{
         sx: {
@@ -1056,10 +1028,10 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         }
       }}
     >
-      {/* Top Header Section */}
-      <Box 
-        sx={{ 
-          p: 3, 
+      {}
+      <Box
+        sx={{
+          p: 3,
           background: "linear-gradient(135deg, #0040b0 0%, #001f60 100%)",
           color: "#ffffff",
           display: "flex",
@@ -1088,15 +1060,15 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
           <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)", mt: 0.5, display: "flex", alignItems: "center", gap: 1 }}>
             {email}
             {user?.role === "student" && studentCode && (
-              <Box 
-                component="span" 
-                sx={{ 
-                  bgcolor: "rgba(255,255,255,0.15)", 
-                  px: 1, 
-                  py: 0.2, 
-                  borderRadius: "4px", 
+              <Box
+                component="span"
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  px: 1,
+                  py: 0.2,
+                  borderRadius: "4px",
                   fontSize: "0.75rem",
-                  fontFamily: "monospace" 
+                  fontFamily: "monospace"
                 }}
               >
                 ID: {studentCode}
@@ -1104,8 +1076,8 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
             )}
           </Typography>
         </Box>
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             bgcolor: "rgba(255,255,255,0.15)",
             color: "#ffffff",
             px: 2,
@@ -1117,8 +1089,8 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
             textTransform: "uppercase"
           }}
         >
-          {user?.role === "teacher" 
-            ? (language === "ru" ? "Преподаватель" : "Teacher") 
+          {user?.role === "teacher"
+            ? (language === "ru" ? "Преподаватель" : "Teacher")
             : (language === "ru" ? "Студент" : "Student")}
         </Box>
       </Box>
@@ -1128,7 +1100,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         {success && <Alert severity="success" sx={{ mb: 3, borderRadius: "8px" }}>{success}</Alert>}
 
         <Grid container spacing={4}>
-          {/* Left Column: Personal info form */}
+          {}
           <Grid item xs={12} md={7} component="form" onSubmit={handleProfileSubmit}>
             <Typography variant="subtitle2" sx={{ mb: 2.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
               {language === "ru" ? "Личные данные" : "Personal Information"}
@@ -1241,11 +1213,11 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
             </Grid>
 
             <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-              <Button 
-                type="submit" 
-                variant="contained" 
+              <Button
+                type="submit"
+                variant="contained"
                 disabled={loading}
-                sx={{ 
+                sx={{
                   bgcolor: "#0040b0",
                   py: 1,
                   px: 3,
@@ -1259,15 +1231,15 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
             </Box>
           </Grid>
 
-          {/* Right Column: Actions, Theme, Language */}
+          {}
           <Grid item xs={12} md={5} sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {/* Preferences */}
+            {}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
                 {language === "ru" ? "Настройки интерфейса" : "Preferences"}
               </Typography>
-              
-              {/* Theme Selector */}
+
+              {}
               <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
                 <Button
                   fullWidth
@@ -1303,7 +1275,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
                 </Button>
               </Box>
 
-              {/* Language Selector */}
+              {}
               <Box sx={{ display: "flex", gap: 1.5 }}>
                 <Button
                   fullWidth
@@ -1340,7 +1312,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
               </Box>
             </Box>
 
-            {/* Privacy Setting Toggle */}
+            {}
             {user?.role === "student" && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
@@ -1377,12 +1349,12 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
               </Box>
             )}
 
-            {/* Account Controls */}
+            {}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
                 {language === "ru" ? "Безопасность и аккаунт" : "Account Controls"}
               </Typography>
-              
+
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 <Button
                   fullWidth
@@ -1401,7 +1373,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
                   {language === "ru" ? "Сменить пароль" : "Change Password"}
                 </Button>
 
-                {/* Collapsible Password Change Fields */}
+                {}
                 <Collapse in={showPasswordChange}>
                   <Box component="form" onSubmit={handlePasswordSubmit} sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 1.5, p: 2, border: "1px dashed", borderColor: "divider", borderRadius: "8px" }}>
                     <TextField
@@ -1435,9 +1407,9 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                     />
-                    <Button 
-                      type="submit" 
-                      variant="contained" 
+                    <Button
+                      type="submit"
+                      variant="contained"
                       size="small"
                       disabled={loading}
                       sx={{ bgcolor: "#0f172a", "&:hover": { bgcolor: "#1e293b" } }}
@@ -1473,7 +1445,7 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
           </Grid>
         </Grid>
       </DialogContent>
-      
+
       <DialogActions sx={{ px: 4, pb: 4, pt: 0, bgcolor: "background.paper", gap: 1.5 }}>
         <Button onClick={onClose} variant="outlined" sx={{ borderRadius: "8px", textTransform: "none", px: 3 }}>
           {language === "ru" ? "Закрыть" : "Close"}
@@ -1483,9 +1455,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
   );
 };
 
-/* ───────────────────────────────────────────────── */
-/*  UserProfileDialog Component                      */
-/* ───────────────────────────────────────────────── */
 interface UserProfileDialogProps {
   userId: string | null;
   open: boolean;
@@ -1530,10 +1499,10 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
   const showGradesMaskMessage = profileUser?.role === "student" && profileUser?.hide_grades && !isTeacherOrAdmin && profileUser?.id !== currentUser?.id;
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="sm" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: {
@@ -1558,10 +1527,10 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
         </Box>
       ) : profileUser ? (
         <Box>
-          {/* Header Card */}
-          <Box 
-            sx={{ 
-              p: 3, 
+          {}
+          <Box
+            sx={{
+              p: 3,
               background: "linear-gradient(135deg, #0040b0 0%, #001f60 100%)",
               color: "#ffffff",
               display: "flex",
@@ -1587,14 +1556,14 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 {profileUser.first_name} {profileUser.last_name}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)", mt: 0.5 }}>
-                {profileUser.role === "teacher" 
-                  ? (language === "ru" ? "Преподаватель" : "Teacher") 
+                {profileUser.role === "teacher"
+                  ? (language === "ru" ? "Преподаватель" : "Teacher")
                   : (language === "ru" ? "Студент" : "Student")}
               </Typography>
             </Box>
             {profileUser.is_private && (
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   bgcolor: "rgba(255,255,255,0.15)",
                   color: "#ffffff",
                   px: 1.5,
@@ -1612,21 +1581,21 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
           <DialogContent sx={{ p: 3 }}>
             {showMaskMessage && (
               <Alert severity="info" sx={{ mb: 2, borderRadius: "8px" }}>
-                {language === "ru" 
-                  ? "Этот профиль скрыт настройками приватности. Контактные данные недоступны для просмотра другим студентам." 
+                {language === "ru"
+                  ? "Этот профиль скрыт настройками приватности. Контактные данные недоступны для просмотра другим студентам."
                   : "This profile is private. Contact details are hidden from other students."}
               </Alert>
             )}
             {showGradesMaskMessage && (
               <Alert severity="info" sx={{ mb: 2, borderRadius: "8px" }}>
-                {language === "ru" 
-                  ? "Студент скрыл информацию о своей успеваемости (оценки и GPA) от других студентов." 
+                {language === "ru"
+                  ? "Студент скрыл информацию о своей успеваемости (оценки и GPA) от других студентов."
                   : "The student has hidden their academic performance (grades and GPA) from other students."}
               </Alert>
             )}
 
             <Grid container spacing={2}>
-              {/* Email */}
+              {}
               <Grid item xs={12}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block" }}>
                   Email
@@ -1636,7 +1605,7 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 </Typography>
               </Grid>
 
-              {/* Phone */}
+              {}
               <Grid item xs={12} sm={6}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block" }}>
                   {language === "ru" ? "Телефон" : "Phone"}
@@ -1646,7 +1615,7 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 </Typography>
               </Grid>
 
-              {/* Address */}
+              {}
               <Grid item xs={12} sm={6}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block" }}>
                   {language === "ru" ? "Адрес" : "Address"}
@@ -1656,7 +1625,7 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 </Typography>
               </Grid>
 
-              {/* Specific fields */}
+              {}
               {profileUser.role === "student" && profileUser.student_profile && (
                 <>
                   <Grid item xs={12} sm={6}>
@@ -1740,10 +1709,6 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
   );
 };
 
-
-/* ───────────────────────────────────────────────── */
-/*  AppLayout with Top Navigation Bar                */
-/* ───────────────────────────────────────────────── */
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, language } = useAuth();
   const location = useLocation();
@@ -1795,7 +1760,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      {/* ─── TOP APP BAR ─────────────────────────── */}
+      {}
       <AppBar
         position="fixed"
         elevation={0}
@@ -1807,7 +1772,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         }}
       >
         <Toolbar sx={{ px: { xs: 2, sm: 4 }, height: 70, display: "flex", justifyContent: "space-between" }}>
-          {/* Logo on the left */}
+          {}
           <Box
             component={Link}
             to="/dashboard"
@@ -1819,7 +1784,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </Typography>
           </Box>
 
-          {/* Navigation Links in Center/Right */}
+          {}
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 3.5 }}>
             {menuItems.map((item, index) => {
               const isActive = getActiveTab() === index;
@@ -1849,7 +1814,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             })}
           </Box>
 
-          {/* User Profile on the right */}
+          {}
           {user && (
             <Box
               onClick={handleProfileClick}
@@ -1891,7 +1856,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* ─── MAIN CONTENT AREA ───────────────────── */}
+      {}
       <Box
         component="main"
         sx={{
@@ -1904,27 +1869,22 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {children}
       </Box>
 
-      {/* Profile Settings Modal */}
+      {}
       <ProfileSettingsDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
     </Box>
   );
 };
 
-/* ───────────────────────────────────────────────── */
-/*  Root App component                               */
-/* ───────────────────────────────────────────────── */
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  
-  // Determine initial auth page based on URL
+
   const initialAuthPage = window.location.pathname === "/verify-email" ? "verify-email" : "login";
   const [authPage, setAuthPage] = useState<"login" | "register" | "verify-email">(initialAuthPage);
   const [initializing, setInitializing] = useState<boolean>(true);
 
-  // Interface Settings State
   const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
     return (localStorage.getItem("theme_mode") as "light" | "dark") || "light";
   });
@@ -1953,7 +1913,6 @@ export const App: React.FC = () => {
     });
   };
 
-  // Set auth header and fetch user info on mount
   useEffect(() => {
     const autoLogin = async () => {
       const token = localStorage.getItem("access_token");
@@ -1987,7 +1946,7 @@ export const App: React.FC = () => {
               localStorage.setItem("access_token", data.access_token);
               localStorage.setItem("refresh_token", data.refresh_token);
               axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
-              
+
               const meRes = await axios.get("/api/v1/auth/me");
               const u = meRes.data;
               setUser({
@@ -2005,7 +1964,7 @@ export const App: React.FC = () => {
               setIsAuthenticated(true);
             } catch (err) {
               console.error("Token refresh failed.", err);
-              // Clear expired session data
+
               localStorage.removeItem("access_token");
               localStorage.removeItem("refresh_token");
               delete axios.defaults.headers.common["Authorization"];
@@ -2032,7 +1991,7 @@ export const App: React.FC = () => {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
-      
+
       const meRes = await axios.get("/api/v1/auth/me");
       const u = meRes.data;
       setUser({
@@ -2082,7 +2041,7 @@ export const App: React.FC = () => {
           title: "Преподаватель"
         });
       }
-      // Auto login after successful registration
+
       return await login(data.email, data.password);
     } catch (e: any) {
       console.error(e);

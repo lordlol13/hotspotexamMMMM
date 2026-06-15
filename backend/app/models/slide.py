@@ -17,20 +17,19 @@ class Slide(Base):
     thumbnail_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     width: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     height: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    mpp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Microns per pixel
+    mpp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     objective_power: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     uploaded_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     course_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     is_processed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     course: Mapped["Course"] = relationship("Course", back_populates="slides")
     uploader: Mapped[Optional["User"]] = relationship("User", back_populates="slides")
     regions: Mapped[List["Region"]] = relationship("Region", back_populates="slide", cascade="all, delete-orphan")

@@ -17,16 +17,15 @@ class Annotation(Base):
     geometry: Mapped[dict] = mapped_column(JSONB, nullable=False)
     label: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     description: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
-    color: Mapped[str] = mapped_column(String(7), default="#FF0000", nullable=False)  # Hex code
+    color: Mapped[str] = mapped_column(String(7), default="#FF0000", nullable=False)
     is_shared: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     slide: Mapped["Slide"] = relationship("Slide", back_populates="annotations")
     user: Mapped["User"] = relationship("User", back_populates="annotations")

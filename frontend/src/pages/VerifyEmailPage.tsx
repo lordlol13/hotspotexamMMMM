@@ -52,7 +52,7 @@ const VerifyEmailPage: React.FC<{ onGoToLogin: () => void }> = ({ onGoToLogin })
               variant="contained"
               fullWidth
               onClick={() => {
-                // Remove token from url and go to login
+
                 window.history.replaceState({}, document.title, "/");
                 onGoToLogin();
               }}

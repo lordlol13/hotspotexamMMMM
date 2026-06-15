@@ -46,10 +46,8 @@ export const GradesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  // Student analytics states (only for student role)
   const [studentData, setStudentData] = useState<StudentAnalytics | null>(null);
 
-  // Fetch student-specific data
   useEffect(() => {
     const fetchStudentData = async () => {
       if (user?.role === "student") {
@@ -107,7 +105,6 @@ export const GradesPage: React.FC = () => {
 
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
 
-  // Compute teacher overall stats from shared context data
   const overallStats = isTeacher ? {
     average_score: students.length > 0
       ? Math.round((students.reduce((acc, s) => acc + s.average_score, 0) / students.length) * 10) / 10
@@ -121,7 +118,6 @@ export const GradesPage: React.FC = () => {
     total_attempts: students.reduce((acc, s) => acc + s.completed_exams, 0),
   } : null;
 
-  // Sort students by average_score for ranking
   const rankings = [...students].sort((a, b) => b.average_score - a.average_score);
 
   if (loading || dataLoading) {
@@ -134,7 +130,7 @@ export const GradesPage: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", py: 2 }}>
-      {/* Edge-aligned Header */}
+      {}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
           {isTeacher ? "Журнал оценок и успеваемость" : "Моя зачетная книжка"}
@@ -149,7 +145,7 @@ export const GradesPage: React.FC = () => {
 
       {isTeacher ? (
         <Box>
-          {/* KPI Cards */}
+          {}
           <Grid container spacing={3} sx={{ mb: 5 }}>
             <Grid item xs={12} sm={6} md={3}>
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "none" }}>
@@ -195,7 +191,7 @@ export const GradesPage: React.FC = () => {
         </Box>
       ) : (
         <Grid container spacing={4} sx={{ mb: 5 }}>
-          {/* Student Stats & Chart */}
+          {}
           <Grid item xs={12} md={4}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "none", borderRadius: "12px" }}>
@@ -215,7 +211,7 @@ export const GradesPage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Score progress trend chart */}
+              {}
               {studentData?.score_trends && studentData.score_trends.length > 0 && (
                 <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "none", borderRadius: "12px" }}>
                   <CardContent sx={{ p: 3 }}>
@@ -258,7 +254,7 @@ export const GradesPage: React.FC = () => {
             </Box>
           </Grid>
 
-          {/* Exam Attempts History Table */}
+          {}
           <Grid item xs={12} md={8}>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
               История прохождения тестов
@@ -320,7 +316,7 @@ export const GradesPage: React.FC = () => {
         </Grid>
       )}
 
-      {/* Student Rankings Table */}
+      {}
       <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
         Рейтинг успеваемости студентов
       </Typography>
@@ -343,9 +339,9 @@ export const GradesPage: React.FC = () => {
                       {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}`}
                     </Typography>
                     <Box>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
+                      <Typography
+                        variant="body2"
+                        sx={{
                           fontWeight: 700,
                           cursor: "pointer",
                           "&:hover": { color: "#0040b0", textDecoration: "underline" }
@@ -375,7 +371,7 @@ export const GradesPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* User Profile Dialog */}
+      {}
       <UserProfileDialog userId={selectedUserId} open={!!selectedUserId} onClose={() => setSelectedUserId(null)} />
     </Box>
   );

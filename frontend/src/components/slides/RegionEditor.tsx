@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, Box, Typography, Radio, RadioGroup, 
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, Box, Typography, Radio, RadioGroup,
   FormControlLabel, IconButton, List, ListItem, ListItemSecondaryAction,
   CircularProgress, Tooltip
 } from "@mui/material";
@@ -18,7 +18,7 @@ interface RegionEditorProps {
   open: boolean;
   slideId: string;
   shapeType: RegionShapeType;
-  geometry: any; // Coordinates in percentage
+  geometry: any;
   contentType: RegionContentType;
   onClose: () => void;
   onSave: (region: any) => void;
@@ -36,16 +36,13 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [contentType, setContentType] = useState<RegionContentType>("explanation");
-  
-  // Question configuration state
+
   const [questionText, setQuestionText] = useState("");
   const [options, setOptions] = useState<string[]>(["Option 1", "Option 2"]);
   const [correctOption, setCorrectOption] = useState<number>(0);
-  
-  // Explanation state (Optional)
+
   const [explanation, setExplanation] = useState("");
 
-  // Media configuration state
   const [mediaUrl, setMediaUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
@@ -101,8 +98,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
       setUploading(false);
     }
   };
-  
-  // Reset fields on open
+
   useEffect(() => {
     if (open) {
       setTitle("");
@@ -121,7 +117,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
   };
 
   const handleRemoveOption = (index: number) => {
-    if (options.length <= 2) return; // Maintain at least 2 options
+    if (options.length <= 2) return;
     const newOptions = options.filter((_, idx) => idx !== index);
     const newOptionsLength = newOptions.length;
     setOptions(newOptions);
@@ -210,10 +206,10 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
           {shapeType === "text" && "Текст"}
         </Typography>
       </DialogTitle>
-      
+
       <DialogContent sx={{ mt: 2 }}>
         <Box display="flex" flexDirection="column" gap={2.5}>
-          {/* Title field */}
+          {}
           <TextField
             label="Название области (метка)"
             variant="outlined"
@@ -224,7 +220,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          {/* 1. TEST QUESTION TYPE */}
+          {}
           {contentType === "question" && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <TextField
@@ -275,12 +271,12 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
                 </List>
               </RadioGroup>
 
-              <Button 
-                startIcon={<AddIcon />} 
-                onClick={handleAddOption} 
-                variant="text" 
-                color="primary" 
-                size="small" 
+              <Button
+                startIcon={<AddIcon />}
+                onClick={handleAddOption}
+                variant="text"
+                color="primary"
+                size="small"
                 sx={{ alignSelf: "flex-start", mt: 0.5 }}
               >
                 Добавить вариант
@@ -288,7 +284,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             </Box>
           )}
 
-          {/* 2. QUESTION POINT TYPE */}
+          {}
           {contentType === "question_point" && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <TextField
@@ -305,7 +301,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             </Box>
           )}
 
-          {/* 3. QUESTION / EXPLANATION / ANNOTATION FIELDS (Explanation & Media URL) */}
+          {}
           {(contentType === "question" || contentType === "question_point" || contentType === "explanation") && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <Typography variant="subtitle2" fontWeight={700} color="primary.main">
@@ -366,7 +362,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
                 </label>
               </Box>
 
-              {/* Media Preview inside parameters */}
+              {}
               {mediaUrl && (
                 <Box sx={{ mt: 1, p: 1.5, border: "1px dashed #cbd5e1", borderRadius: "8px", bgcolor: "#ffffff" }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1, fontWeight: 600 }}>
@@ -397,7 +393,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             </Box>
           )}
 
-          {/* 4. OTHER MEDIA TYPES (YouTube, Audio, PDF, Link) */}
+          {}
           {contentType !== "question" && contentType !== "question_point" && contentType !== "explanation" && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <Typography variant="subtitle2" fontWeight={700} color="primary.main">
@@ -463,7 +459,7 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
                 </label>
               </Box>
 
-              {/* Media Preview for other types */}
+              {}
               {mediaUrl && (
                 <Box sx={{ mt: 1, p: 1.5, border: "1px dashed #cbd5e1", borderRadius: "8px", bgcolor: "#ffffff" }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1, fontWeight: 600 }}>

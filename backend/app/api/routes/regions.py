@@ -78,7 +78,6 @@ def delete_region(
     RegionService.delete_region(db, region_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
 @router.post("/upload-media")
 def upload_media(
     file: UploadFile = File(...),
@@ -90,14 +89,14 @@ def upload_media(
     import os
     media_dir = os.path.join(settings.UPLOAD_DIR, "media")
     os.makedirs(media_dir, exist_ok=True)
-    
+
     allowed_types = {"image/jpeg", "image/png", "image/webp", "application/pdf", "audio/mpeg", "video/mp4"}
     if file.content_type not in allowed_types:
         raise BadRequestException("Unsupported media type")
     file_ext = os.path.splitext(file.filename or "")[1].lower()
     filename = f"{uuid.uuid4()}{file_ext}"
     file_path = os.path.join(media_dir, filename)
-    
+
     try:
         total = 0
         with open(file_path, "wb") as buffer:
@@ -112,9 +111,8 @@ def upload_media(
         raise
     except OSError:
         raise BadRequestException("Failed to save media")
-        
-    return {"url": f"/api/v1/regions/media/{filename}"}
 
+    return {"url": f"/api/v1/regions/media/{filename}"}
 
 @router.get("/media/{filename}")
 def get_media_file(filename: str, current_user: User = Depends(get_current_active_user)):

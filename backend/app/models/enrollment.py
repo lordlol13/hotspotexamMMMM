@@ -13,7 +13,6 @@ class CourseEnrollment(Base):
     enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    # Relationships
     student: Mapped["Student"] = relationship("Student", back_populates="enrollments")
     course: Mapped["Course"] = relationship("Course", back_populates="enrollments")
 

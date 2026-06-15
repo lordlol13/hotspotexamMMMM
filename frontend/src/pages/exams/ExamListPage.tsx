@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Box, Button, Card, CardContent, Divider, Grid, MenuItem, 
-  Select, TextField, Typography, Chip, 
+import {
+  Box, Button, Card, CardContent, Divider, Grid, MenuItem,
+  Select, TextField, Typography, Chip,
   CircularProgress, Alert, InputLabel, FormControl, Stack, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress, Paper
 } from "@mui/material";
@@ -44,10 +44,9 @@ interface Exam {
   attempt_limit: number;
   start_time?: string;
   end_time?: string;
-  question_count?: number; 
+  question_count?: number;
   questions?: any[];
 }
-
 
 export const ExamListPage: React.FC = () => {
   const { user } = useAuth();
@@ -60,30 +59,26 @@ export const ExamListPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [exams, setExams] = useState<Exam[]>([]);
   const [attempts, setAttempts] = useState<any[]>([]);
-  
-  // Retake grant form state
+
   const [selectedStudent, setSelectedStudent] = useState("");
   const [selectedExam, setSelectedExam] = useState("");
   const [retakeAttempts, setRetakeAttempts] = useState(1);
   const [grantSuccess, setGrantSuccess] = useState<string | null>(null);
   const [grantError, setGrantError] = useState<string | null>(null);
 
-  // Scheduling Dialog states
   const [selectedExamForSchedule, setSelectedExamForSchedule] = useState<Exam | null>(null);
   const [schedulingOpen, setSchedulingOpen] = useState(false);
   const [schedulingStart, setSchedulingStart] = useState("");
   const [schedulingEnd, setSchedulingEnd] = useState("");
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
 
-  // Download Report Dialog states
   const [selectedExamForReport, setSelectedExamForReport] = useState<Exam | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [showVisualDashboard, setShowVisualDashboard] = useState(false);
 
-  // Exam creation form state (Teacher only)
   const [newExamTitle, setNewExamTitle] = useState("");
   const [newExamDuration, setNewExamDuration] = useState(60);
   const [newExamPassing, setNewExamPassing] = useState(60);
@@ -91,7 +86,6 @@ export const ExamListPage: React.FC = () => {
   const [newExamStartTime, setNewExamStartTime] = useState("");
   const [newExamEndTime, setNewExamEndTime] = useState("");
 
-  // Fullscreen exam designer state
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [creatorStep, setCreatorStep] = useState(1);
   const [uploading, setUploading] = useState(false);
@@ -105,7 +99,6 @@ export const ExamListPage: React.FC = () => {
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
 
-  // Multiselect slide files states
   const [examSlides, setExamSlides] = useState<any[]>([]);
   const [selectedExistingSlideIds, setSelectedExistingSlideIds] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -113,17 +106,15 @@ export const ExamListPage: React.FC = () => {
   const [flaggedRegionIds, setFlaggedRegionIds] = useState<string[]>([]);
   const [editingExamQuestions, setEditingExamQuestions] = useState<any[]>([]);
 
-  // Log regions order change to satisfy TS compiler (no unused variables)
   useEffect(() => {
     if (orderedRegionIds.length > 0) {
       console.log("Updated regions sorting order:", orderedRegionIds);
     }
   }, [orderedRegionIds]);
 
-  // Sample static slide images to make cards look like the screenshot
   const cardImages = [
-    "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?q=80&w=600&auto=format&fit=crop", 
-    "https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=600&auto=format&fit=crop", 
+    "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?q=80&w=600&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=600&auto=format&fit=crop",
   ];
 
   const fetchData = async (silent = false) => {
@@ -183,7 +174,7 @@ export const ExamListPage: React.FC = () => {
     fetchData(false);
     const timer = setInterval(() => {
       fetchData(true);
-    }, 8000); // Poll database every 8 seconds silently
+    }, 8000);
     return () => clearInterval(timer);
   }, [user.role]);
 
@@ -214,7 +205,6 @@ export const ExamListPage: React.FC = () => {
     }
   };
 
-  // Poll slide regions when editing is active across all selected slides
   useEffect(() => {
     if (creatorStep !== 2 || examSlides.length === 0) return;
 
@@ -236,26 +226,25 @@ export const ExamListPage: React.FC = () => {
       try {
         const fetchedRegions = await fetchAllRegions();
         const activeIds = fetchedRegions.map((r: any) => r.id);
-        
+
         setOrderedRegionIds(prevOrder => {
           const updatedOrder = [...prevOrder];
-          // Add new regions to the end
+
           fetchedRegions.forEach((r: any) => {
             if (!updatedOrder.includes(r.id)) {
               updatedOrder.push(r.id);
             }
           });
-          // Filter out any IDs that were deleted
+
           const cleanedOrder = updatedOrder.filter(id => activeIds.includes(id));
-          
-          // Sort regions and set state
+
           const sorted = [...fetchedRegions].sort((a, b) => {
             const posA = cleanedOrder.indexOf(a.id);
             const posB = cleanedOrder.indexOf(b.id);
             return (posA === -1 ? 999999 : posA) - (posB === -1 ? 999999 : posB);
           });
           setCreatorRegions(sorted);
-          
+
           return cleanedOrder;
         });
       } catch (err) {
@@ -263,7 +252,6 @@ export const ExamListPage: React.FC = () => {
       }
     };
 
-    // Run immediately
     syncRegions();
 
     const interval = setInterval(syncRegions, 2000);
@@ -285,13 +273,12 @@ export const ExamListPage: React.FC = () => {
     const updatedRegions = [...creatorRegions];
     const [draggedItem] = updatedRegions.splice(draggedIndex, 1);
     updatedRegions.splice(targetIndex, 0, draggedItem);
-    
+
     setCreatorRegions(updatedRegions);
-    
-    // Also update the orderedRegionIds state!
+
     const newOrderIds = updatedRegions.map(r => r.id);
     setOrderedRegionIds(newOrderIds);
-    
+
     setDraggedIndex(null);
   };
 
@@ -318,7 +305,7 @@ export const ExamListPage: React.FC = () => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const examTitle = file.name.replace(/\.[^/.]+$/, "");
-      
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("title", examTitle);
@@ -379,9 +366,9 @@ export const ExamListPage: React.FC = () => {
 
       let examId = editingExamId;
       const slideTitlesText = examSlides.map(s => s.title).join(", ");
-      
+
       if (examId) {
-        // 1. Update existing exam
+
         await axios.put(`/api/v1/exams/${examId}`, {
           title: newExamTitle,
           description: `Интерактивный экзамен по препаратам: ${slideTitlesText}`,
@@ -394,11 +381,10 @@ export const ExamListPage: React.FC = () => {
           group_ids: selectedGroupIds,
           student_ids: selectedStudentIds
         });
-        
-        // 2. Clear old questions from the exam in backend
+
         await axios.delete(`/api/v1/exams/${examId}/questions`);
       } else {
-        // Create new exam
+
         const examRes = await axios.post("/api/v1/exams/", {
           title: newExamTitle,
           description: `Интерактивный экзамен по препаратам: ${slideTitlesText}`,
@@ -416,16 +402,15 @@ export const ExamListPage: React.FC = () => {
         examId = examRes.data.id;
       }
 
-      // 2. Add each hotspot region as a question in the exam
       let questionIndex = 1;
       for (let i = 0; i < filteredRegions.length; i++) {
         const reg = filteredRegions[i];
         if ((reg.content_type === "question" || reg.content_type === "question_point") && reg.content_data) {
           const qData = reg.content_data;
-          
+
           let questionType = "single_choice";
           let optionsPayload: any[] = [];
-          
+
           if (reg.content_type === "question") {
             questionType = "single_choice";
             optionsPayload = (qData.options || []).map((o: any, idx: number) => ({
@@ -473,8 +458,7 @@ export const ExamListPage: React.FC = () => {
       setSelectedGroupIds([]);
       setSelectedStudentIds([]);
       setSettingsDialogOpen(false);
-      
-      // Refresh list
+
       fetchData();
     } catch (err) {
       console.error(err);
@@ -484,7 +468,6 @@ export const ExamListPage: React.FC = () => {
     }
   };
 
-  // ─── JSON IMPORT ───
   const handleImportJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -499,7 +482,7 @@ export const ExamListPage: React.FC = () => {
         }
 
         setLoading(true);
-        // Create the exam
+
         const examRes = await axios.post("/api/v1/exams/", {
           title: data.title,
           description: data.description || "Импортированный экзамен по гистологии",
@@ -514,7 +497,6 @@ export const ExamListPage: React.FC = () => {
         });
         const newExam = examRes.data;
 
-        // Create questions
         if (data.questions && Array.isArray(data.questions)) {
           for (const q of data.questions) {
             await axios.post(`/api/v1/exams/${newExam.id}/questions`, {
@@ -541,13 +523,12 @@ export const ExamListPage: React.FC = () => {
     reader.readAsText(file);
   };
 
-  // ─── EDIT EXAM ───
   const handleEditExam = async (exam: Exam) => {
     try {
       setLoading(true);
       const res = await axios.get(`/api/v1/exams/${exam.id}`);
       const fullExam = res.data;
-      
+
       setEditingExamId(fullExam.id);
       setNewExamTitle(fullExam.title);
       setNewExamDuration(fullExam.duration_minutes);
@@ -557,13 +538,13 @@ export const ExamListPage: React.FC = () => {
       setNewExamEndTime(fullExam.end_time ? new Date(fullExam.end_time).toISOString().substring(0, 16) : "");
       setSelectedGroupIds(fullExam.group_ids || []);
       setSelectedStudentIds(fullExam.student_ids || []);
-      
+
       const uniqueSlideIds = Array.from(new Set(
         (fullExam.questions || [])
           .map((q: any) => q.slide_id)
           .filter(Boolean)
       )) as string[];
-      
+
       const slidesInExam = uniqueSlideIds.map(id => {
         const found = existingSlides.find(s => s.id === id);
         return found || { id, title: `Препарат (${id.substring(0, 5)})` };
@@ -571,13 +552,11 @@ export const ExamListPage: React.FC = () => {
       setExamSlides(slidesInExam);
       setSelectedExistingSlideIds(uniqueSlideIds);
 
-      // Extract saved region order
       const savedRegionOrder = (fullExam.questions || [])
         .map((q: any) => q.region_of_interest?.region_id)
         .filter(Boolean) as string[];
       setOrderedRegionIds(savedRegionOrder);
 
-      // Extract flagged region IDs
       const flaggedIds = (fullExam.questions || [])
         .filter((q: any) => q.is_flagged)
         .map((q: any) => q.region_of_interest?.region_id)
@@ -589,8 +568,7 @@ export const ExamListPage: React.FC = () => {
         const firstSlide = slidesInExam[0];
         setUploadedSlideId(firstSlide.id);
         setSlideTitle(firstSlide.title);
-        
-        // Fetch all regions for all slides in parallel for instant display
+
         const allFetched: any[] = [];
         await Promise.all(slidesInExam.map(async (slide) => {
           try {
@@ -601,17 +579,16 @@ export const ExamListPage: React.FC = () => {
             console.error("Error fetching regions for slide", slide.id, err);
           }
         }));
-        
-        // Sort using savedRegionOrder
+
         const sorted = [...allFetched].sort((a, b) => {
           const posA = savedRegionOrder.indexOf(a.id);
           const posB = savedRegionOrder.indexOf(b.id);
           return (posA === -1 ? 999999 : posA) - (posB === -1 ? 999999 : posB);
         });
         setCreatorRegions(sorted);
-        setCreatorStep(2); // Jump to step 2 since we already have a slide!
+        setCreatorStep(2);
       } else {
-        // No slide yet, let them upload/select a slide
+
         setUploadedSlideId(null);
         setCreatorRegions([]);
         setCreatorStep(1);
@@ -625,7 +602,6 @@ export const ExamListPage: React.FC = () => {
     }
   };
 
-  // ─── DELETE EXAM ───
   const handleDeleteExam = async (examId: string, title: string) => {
     if (!window.confirm(`Вы действительно хотите удалить экзамен "${title}" и все его вопросы?`)) {
       return;
@@ -642,10 +618,9 @@ export const ExamListPage: React.FC = () => {
     }
   };
 
-  // ─── SCHEDULING DIALOG CONTROLS ───
   const handleOpenScheduling = (exam: Exam) => {
     setSelectedExamForSchedule(exam);
-    // Parse times
+
     const formatDateTimeLocal = (isoString?: string) => {
       if (!isoString) return "";
       const date = new Date(isoString);
@@ -677,7 +652,6 @@ export const ExamListPage: React.FC = () => {
     }
   };
 
-  // Calendar render helpers for Scheduling Range Picker
   const handleDayClick = (dayNum: number) => {
     const year = currentCalendarMonth.getFullYear();
     const month = String(currentCalendarMonth.getMonth() + 1).padStart(2, '0');
@@ -701,8 +675,7 @@ export const ExamListPage: React.FC = () => {
     const month = currentCalendarMonth.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
-    
-    // Shift days for grid (Monday first)
+
     const offset = firstDay === 0 ? 6 : firstDay - 1;
     const days = [];
     for (let i = 0; i < offset; i++) {
@@ -733,7 +706,6 @@ export const ExamListPage: React.FC = () => {
     return false;
   };
 
-  // ─── REPORT DOWNLOAD CONTROLS ───
   const handleOpenReport = (exam: Exam) => {
     setSelectedExamForReport(exam);
     setShowVisualDashboard(false);
@@ -769,7 +741,7 @@ ID Экзамена: ${selectedExamForReport.id}
 
   const downloadExcelReport = () => {
     if (!selectedExamForReport) return;
-    // Generate CSV (compatible with Excel)
+
     const headers = "ФИО Студента,Email,Оценка %,Результат,Длительность (мин),Дата попытки\n";
     const rows = [
       "Алексей Иванов,alex@edu.ru,92.5,Сдано,12,2026-06-13 14:22",
@@ -796,18 +768,15 @@ ID Экзамена: ${selectedExamForReport.id}
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Background
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(0, 0, 600, 500);
 
-    // Card background with rounded corner & shadow
     ctx.fillStyle = "#ffffff";
     ctx.shadowColor = "rgba(15, 23, 42, 0.08)";
     ctx.shadowBlur = 15;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 6;
-    
-    // Rounded rectangle function
+
     const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -825,12 +794,10 @@ ID Экзамена: ${selectedExamForReport.id}
 
     roundRect(20, 20, 560, 460, 16);
 
-    // Reset shadow
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
     ctx.shadowColor = "transparent";
 
-    // Header Title
     ctx.fillStyle = "#0f172a";
     ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("Визуальный отчет по экзамену", 45, 65);
@@ -839,12 +806,9 @@ ID Экзамена: ${selectedExamForReport.id}
     ctx.font = "14px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText(`Название: ${selectedExamForReport.title}`, 45, 90);
 
-    // Separator line
     ctx.fillStyle = "#e2e8f0";
     ctx.fillRect(45, 115, 510, 1.5);
 
-    // Stats Columns
-    // Avg Score Card
     ctx.fillStyle = "#64748b";
     ctx.font = "bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("СРЕДНИЙ БАЛЛ", 45, 150);
@@ -852,7 +816,6 @@ ID Экзамена: ${selectedExamForReport.id}
     ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("77.5%", 45, 190);
 
-    // Success Rate Card
     ctx.fillStyle = "#64748b";
     ctx.font = "bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("СДАЛИ ЭКЗАМЕН", 300, 150);
@@ -860,11 +823,9 @@ ID Экзамена: ${selectedExamForReport.id}
     ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("75.0%", 300, 190);
 
-    // Separator line
     ctx.fillStyle = "#e2e8f0";
     ctx.fillRect(45, 220, 510, 1.5);
 
-    // Distribution Title
     ctx.fillStyle = "#64748b";
     ctx.font = "bold 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillText("РАСПРЕДЕЛЕНИЕ ОЦЕНОК", 45, 255);
@@ -878,22 +839,19 @@ ID Экзамена: ${selectedExamForReport.id}
 
     let startY = 285;
     items.forEach((item) => {
-      // Label
+
       ctx.fillStyle = "#334155";
       ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       ctx.fillText(item.label, 45, startY + 12);
 
-      // Track bar (grey background track)
       ctx.fillStyle = "#f1f5f9";
       ctx.fillRect(145, startY, 320, 16);
 
-      // Value bar (colored progress fill)
       if (item.widthPct > 0) {
         ctx.fillStyle = item.color;
         ctx.fillRect(145, startY, 320 * item.widthPct, 16);
       }
 
-      // Count
       ctx.fillStyle = "#475569";
       ctx.font = "bold 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       ctx.fillText(item.count, 485, startY + 12);
@@ -901,7 +859,6 @@ ID Экзамена: ${selectedExamForReport.id}
       startY += 40;
     });
 
-    // Save canvas to data URL and download
     const dataUrl = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = dataUrl;
@@ -919,16 +876,16 @@ ID Экзамена: ${selectedExamForReport.id}
 
   return (
     <Box sx={{ maxWidth: 1250, mx: "auto", px: 2 }}>
-      {/* Hidden inputs */}
-      <input 
-        type="file" 
-        id="json-import-input" 
-        style={{ display: "none" }} 
-        accept=".json" 
-        onChange={handleImportJson} 
+      {}
+      <input
+        type="file"
+        id="json-import-input"
+        style={{ display: "none" }}
+        accept=".json"
+        onChange={handleImportJson}
       />
 
-      {/* ========== HEADER BLOCK ========== */}
+      {}
       <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
         <Box>
           {(user.role === "teacher" || user.role === "admin") && (
@@ -942,17 +899,17 @@ ID Экзамена: ${selectedExamForReport.id}
         </Box>
         {(user.role === "teacher" || user.role === "admin") && (
           <Box display="flex" gap={1.5}>
-            <Button 
-              variant="outlined" 
-              startIcon={<FileUploadIcon />} 
+            <Button
+              variant="outlined"
+              startIcon={<FileUploadIcon />}
               onClick={() => document.getElementById("json-import-input")?.click()}
               sx={{ border: "1.5px solid #cbd5e1", textTransform: "none", fontWeight: 700, borderRadius: "8px", color: "#475569" }}
             >
               Импорт JSON
             </Button>
-            <Button 
-              variant="contained" 
-              startIcon={<AddIcon />} 
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
               onClick={() => {
                 setIsCreatorOpen(true);
                 setCreatorStep(1);
@@ -982,7 +939,7 @@ ID Экзамена: ${selectedExamForReport.id}
       {error && <Alert severity="warning" sx={{ mb: 4, borderRadius: "10px" }}>{error}</Alert>}
 
       <Grid container spacing={4}>
-        {/* Exam Catalogue Column */}
+        {}
         <Grid item xs={12} lg={user.role === "teacher" || user.role === "admin" ? 7 : 12}>
           <Stack spacing={3}>
             {exams.map((exam, index) => {
@@ -994,9 +951,9 @@ ID Экзамена: ${selectedExamForReport.id}
               const flaggedQuestionsCount = (exam.questions || []).filter((q: any) => q.is_flagged).length;
 
               return (
-                <Card 
-                  key={exam.id} 
-                  sx={{ 
+                <Card
+                  key={exam.id}
+                  sx={{
                     display: "flex",
                     flexDirection: { xs: "column", sm: "row" },
                     overflow: "hidden",
@@ -1007,7 +964,7 @@ ID Экзамена: ${selectedExamForReport.id}
                     "&:hover": { borderColor: "#94a3b8", transform: "translateY(-2px)" }
                   }}
                 >
-                  {/* Left Side: Microscope Image */}
+                  {}
                   <Box
                     sx={{
                       width: { xs: "100%", sm: 200 },
@@ -1019,47 +976,47 @@ ID Экзамена: ${selectedExamForReport.id}
                     }}
                   />
 
-                  {/* Right Side: Details & Actions */}
+                  {}
                   <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
                     <CardContent sx={{ p: 3, flexGrow: 1, display: "flex", flexDirection: "column" }}>
                       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
                         <Typography variant="h6" fontWeight={800} sx={{ color: "#0f172a", fontSize: "1.15rem" }}>
                           {exam.title}
                         </Typography>
-                        
+
                         {user.role === "student" && (
                           hasPassed ? (
-                            <Chip 
-                              icon={<CheckCircleOutlineIcon />} 
-                              label="Сдано" 
-                              color="success" 
-                              size="small" 
+                            <Chip
+                              icon={<CheckCircleOutlineIcon />}
+                              label="Сдано"
+                              color="success"
+                              size="small"
                               sx={{ fontWeight: 700, borderRadius: "6px" }}
                             />
                           ) : attemptCount >= exam.attempt_limit ? (
-                            <Chip 
-                              icon={<WarningAmberIcon />} 
-                              label="Превышен лимит" 
-                              color="error" 
-                              size="small" 
+                            <Chip
+                              icon={<WarningAmberIcon />}
+                              label="Превышен лимит"
+                              color="error"
+                              size="small"
                               sx={{ fontWeight: 700, borderRadius: "6px" }}
                             />
                           ) : (
-                            <Chip 
-                              label={`Попыток осталось: ${exam.attempt_limit - attemptCount}`} 
-                              color="warning" 
-                              size="small" 
+                            <Chip
+                              label={`Попыток осталось: ${exam.attempt_limit - attemptCount}`}
+                              color="warning"
+                              size="small"
                               variant="outlined"
                               sx={{ fontWeight: 700, borderRadius: "6px" }}
                             />
                           )
                         )}
                         {user.role !== "student" && flaggedQuestionsCount > 0 && (
-                          <Chip 
-                            icon={<FlagIcon style={{ color: "#ffffff", fontSize: 13 }} />} 
-                            label={`Ошибки: ${flaggedQuestionsCount}`} 
-                            color="error" 
-                            size="small" 
+                          <Chip
+                            icon={<FlagIcon style={{ color: "#ffffff", fontSize: 13 }} />}
+                            label={`Ошибки: ${flaggedQuestionsCount}`}
+                            color="error"
+                            size="small"
                             sx={{ fontWeight: 800, borderRadius: "6px" }}
                           />
                         )}
@@ -1069,28 +1026,28 @@ ID Экзамена: ${selectedExamForReport.id}
                         {exam.description || "Описание отсутствует."}
                       </Typography>
 
-                      {/* Info Pills */}
+                      {}
                       <Box display="flex" gap={1} sx={{ mb: 2.5, flexWrap: "wrap" }}>
-                        <Chip 
+                        <Chip
                           icon={<QuestionMarkIcon style={{ fontSize: 13, color: "#0040b0" }} />}
                           label={`${exam.question_count || index * 4 + 4} вопр.`}
                           size="small"
                           sx={{ bgcolor: "rgba(0,64,176,0.06)", color: "#0040b0", fontWeight: 700, borderRadius: "6px" }}
                         />
-                        <Chip 
+                        <Chip
                           icon={<GroupIcon style={{ fontSize: 13, color: "#0040b0" }} />}
                           label={`${exam.duration_minutes} мин.`}
                           size="small"
                           sx={{ bgcolor: "rgba(0,64,176,0.06)", color: "#0040b0", fontWeight: 700, borderRadius: "6px" }}
                         />
-                        <Chip 
+                        <Chip
                           label={`Проходной: ${exam.passing_score}%`}
                           size="small"
                           variant="outlined"
                           sx={{ fontWeight: 700, borderColor: "#cbd5e1", borderRadius: "6px", color: "#475569" }}
                         />
                         {user.role === "student" && latestAttempt && (
-                          <Chip 
+                          <Chip
                             label={`Результат: ${latestAttempt.score_pct.toFixed(1)}%`}
                             color={latestAttempt.passed ? "success" : "error"}
                             size="small"
@@ -1101,7 +1058,7 @@ ID Экзамена: ${selectedExamForReport.id}
 
                       <Divider sx={{ my: 1.5, borderColor: "#f1f5f9" }} />
 
-                      {/* Actions Bar */}
+                      {}
                       <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1} sx={{ mt: "auto" }}>
                         {user.role === "student" ? (
                           <Button
@@ -1116,8 +1073,8 @@ ID Экзамена: ${selectedExamForReport.id}
                           </Button>
                         ) : (
                           <>
-                            <Button 
-                              variant="contained" 
+                            <Button
+                              variant="contained"
                               size="small"
                               startIcon={<EditIcon style={{ fontSize: 14 }} />}
                               onClick={() => handleEditExam(exam)}
@@ -1127,31 +1084,31 @@ ID Экзамена: ${selectedExamForReport.id}
                             </Button>
 
                             <Box display="flex" gap={0.8}>
-                              <IconButton 
-                                size="small" 
-                                color="primary" 
+                              <IconButton
+                                size="small"
+                                color="primary"
                                 onClick={() => navigate(`/exams/${exam.id}/take`)}
                                 sx={{ border: "1.5px solid #e2e8f0", borderRadius: "8px", p: 0.8 }}
                               >
                                 <PlayArrowIcon style={{ fontSize: 18, color: "#0040b0" }} />
                               </IconButton>
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 onClick={() => handleOpenScheduling(exam)}
                                 sx={{ border: "1.5px solid #e2e8f0", borderRadius: "8px", p: 0.8 }}
                               >
                                 <CalendarTodayIcon style={{ fontSize: 16, color: "#475569" }} />
                               </IconButton>
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 onClick={() => handleOpenReport(exam)}
                                 sx={{ border: "1.5px solid #e2e8f0", borderRadius: "8px", p: 0.8 }}
                               >
                                 <GetAppIcon style={{ fontSize: 16, color: "#475569" }} />
                               </IconButton>
-                              <IconButton 
-                                size="small" 
-                                color="error" 
+                              <IconButton
+                                size="small"
+                                color="error"
                                 onClick={() => handleDeleteExam(exam.id, exam.title)}
                                 sx={{ border: "1.5px solid #fee2e2", borderRadius: "8px", p: 0.8, bgcolor: "#fff1f1", "&:hover": { bgcolor: "#fecaca" } }}
                               >
@@ -1169,12 +1126,12 @@ ID Экзамена: ${selectedExamForReport.id}
           </Stack>
         </Grid>
 
-        {/* Teacher Admin Tools Column */}
+        {}
         {(user.role === "teacher" || user.role === "admin") && (
           <Grid item xs={12} lg={5}>
             <Stack spacing={3}>
-              
-              {/* Replacement Content: Stunning Visual Analytics Dashboard (Power BI style) */}
+
+              {}
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.03)", borderRadius: "14px" }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box display="flex" alignItems="center" gap={1} mb={0.5}>
@@ -1187,7 +1144,7 @@ ID Экзамена: ${selectedExamForReport.id}
                     Сводные показатели успеваемости студентов по текущим контрольным.
                   </Typography>
 
-                  {/* High Fidelity Stats Grid */}
+                  {}
                   <Grid container spacing={2} mb={3}>
                     <Grid item xs={6}>
                       <Paper sx={{ p: 2, border: "1px solid #e2e8f0", bgcolor: "#f8fafc", borderRadius: "10px", textAlign: "center", boxShadow: "none" }}>
@@ -1205,7 +1162,7 @@ ID Экзамена: ${selectedExamForReport.id}
                     </Grid>
                   </Grid>
 
-                  {/* Success Rate Chart (Visual CSS bar chart) */}
+                  {}
                   <Typography variant="subtitle2" fontWeight={800} color="#334155" sx={{ mb: 1.5, fontSize: "0.85rem", letterSpacing: 0.5, textTransform: "uppercase" }}>
                     Успешность по темам (%)
                   </Typography>
@@ -1232,7 +1189,7 @@ ID Экзамена: ${selectedExamForReport.id}
 
                   <Divider sx={{ my: 2.5 }} />
 
-                  {/* Recent Activity Feed */}
+                  {}
                   <Typography variant="subtitle2" fontWeight={800} color="#334155" sx={{ mb: 2, fontSize: "0.85rem", letterSpacing: 0.5, textTransform: "uppercase" }}>
                     Активность прохождения
                   </Typography>
@@ -1262,7 +1219,7 @@ ID Экзамена: ${selectedExamForReport.id}
                 </CardContent>
               </Card>
 
-              {/* Retake Management Form */}
+              {}
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.03)", borderRadius: "14px" }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" fontWeight={800} sx={{ mb: 1, color: "#0f172a" }}>
@@ -1321,9 +1278,9 @@ ID Экзамена: ${selectedExamForReport.id}
                       sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                     />
 
-                    <Button 
-                      type="submit" 
-                      variant="contained" 
+                    <Button
+                      type="submit"
+                      variant="contained"
                       fullWidth
                       sx={{ py: 1.2, fontWeight: 700, borderRadius: "8px", bgcolor: "#0040b0", textTransform: "none", "&:hover": { bgcolor: "#003390" } }}
                     >
@@ -1337,11 +1294,11 @@ ID Экзамена: ${selectedExamForReport.id}
         )}
       </Grid>
 
-      {/* ─── SCHEDULING (CALENDAR RANGE) DIALOG ─── */}
-      <Dialog 
-        open={schedulingOpen} 
-        onClose={() => setSchedulingOpen(false)} 
-        maxWidth="xs" 
+      {}
+      <Dialog
+        open={schedulingOpen}
+        onClose={() => setSchedulingOpen(false)}
+        maxWidth="xs"
         fullWidth
         PaperProps={{ sx: { borderRadius: "16px", p: 1.5 } }}
       >
@@ -1353,21 +1310,21 @@ ID Экзамена: ${selectedExamForReport.id}
             Выберите период времени на календаре или укажите точные даты ниже.
           </Typography>
 
-          {/* Interactive Calendar Header */}
+          {}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} px={1}>
             <Typography variant="subtitle2" fontWeight={800} color="#1e293b">
               {currentCalendarMonth.toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}
             </Typography>
             <Box display="flex" gap={0.5}>
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => setCurrentCalendarMonth(new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() - 1, 1))}
                 sx={{ border: "1px solid #cbd5e1" }}
               >
                 <ArrowBackIcon fontSize="small" />
               </IconButton>
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => setCurrentCalendarMonth(new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + 1, 1))}
                 sx={{ border: "1px solid #cbd5e1" }}
               >
@@ -1376,9 +1333,9 @@ ID Экзамена: ${selectedExamForReport.id}
             </Box>
           </Box>
 
-          {/* Interactive Calendar Grid */}
+          {}
           <Box sx={{ border: "1px solid #e2e8f0", borderRadius: "10px", p: 1, bgcolor: "#f8fafc", mb: 3 }}>
-            {/* Weekdays */}
+            {}
             <Grid container columns={7} sx={{ textAlign: "center", mb: 1 }}>
               {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map(w => (
                 <Grid item xs={1} key={w}>
@@ -1387,7 +1344,7 @@ ID Экзамена: ${selectedExamForReport.id}
               ))}
             </Grid>
 
-            {/* Days Grid */}
+            {}
             <Grid container columns={7} spacing={0.5} sx={{ textAlign: "center" }}>
               {getCalendarDays().map((dayNum, idx) => {
                 if (dayNum === null) {
@@ -1396,19 +1353,19 @@ ID Экзамена: ${selectedExamForReport.id}
                 const selected = isDaySelected(dayNum);
                 return (
                   <Grid item xs={1} key={`day-${dayNum}`}>
-                    <Box 
+                    <Box
                       onClick={() => handleDayClick(dayNum)}
-                      sx={{ 
-                        py: 0.8, 
-                        fontWeight: 700, 
+                      sx={{
+                        py: 0.8,
+                        fontWeight: 700,
                         fontSize: "0.85rem",
                         borderRadius: "6px",
                         cursor: "pointer",
                         bgcolor: selected ? "#0040b0" : "transparent",
                         color: selected ? "#ffffff" : "#334155",
                         transition: "background-color 0.1s, color 0.1s",
-                        "&:hover": { 
-                          bgcolor: selected ? "#003390" : "#e2e8f0" 
+                        "&:hover": {
+                          bgcolor: selected ? "#003390" : "#e2e8f0"
                         }
                       }}
                     >
@@ -1420,7 +1377,7 @@ ID Экзамена: ${selectedExamForReport.id}
             </Grid>
           </Box>
 
-          {/* Date range inputs at the bottom */}
+          {}
           <Stack spacing={2}>
             <TextField
               label="Доступен с (От)"
@@ -1454,11 +1411,11 @@ ID Экзамена: ${selectedExamForReport.id}
         </DialogActions>
       </Dialog>
 
-      {/* ─── DOWNLOAD REPORT DIALOG ─── */}
-      <Dialog 
-        open={reportOpen} 
-        onClose={() => setReportOpen(false)} 
-        maxWidth={showVisualDashboard ? "sm" : "xs"} 
+      {}
+      <Dialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        maxWidth={showVisualDashboard ? "sm" : "xs"}
         fullWidth
         PaperProps={{ sx: { borderRadius: "16px", p: 1.5 } }}
       >
@@ -1472,55 +1429,55 @@ ID Экзамена: ${selectedExamForReport.id}
                 Выберите формат для экспорта результатов студентов и аналитики экзамена.
               </Typography>
               <Stack spacing={2}>
-                <Button 
-                  variant="outlined" 
-                  fullWidth 
+                <Button
+                  variant="outlined"
+                  fullWidth
                   startIcon={<GetAppIcon />}
                   onClick={downloadExcelReport}
-                  sx={{ 
-                    justifyContent: "flex-start", 
-                    py: 1.5, 
-                    px: 2.5, 
-                    border: "1.5px solid #e2e8f0", 
-                    borderRadius: "10px", 
-                    textTransform: "none", 
-                    fontWeight: 700, 
-                    color: "#0f172a" 
+                  sx={{
+                    justifyContent: "flex-start",
+                    py: 1.5,
+                    px: 2.5,
+                    border: "1.5px solid #e2e8f0",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    color: "#0f172a"
                   }}
                 >
                   Экспортировать в Excel (.xlsx / .csv)
                 </Button>
-                <Button 
-                  variant="outlined" 
-                  fullWidth 
+                <Button
+                  variant="outlined"
+                  fullWidth
                   startIcon={<GetAppIcon />}
                   onClick={downloadTxtReport}
-                  sx={{ 
-                    justifyContent: "flex-start", 
-                    py: 1.5, 
-                    px: 2.5, 
-                    border: "1.5px solid #e2e8f0", 
-                    borderRadius: "10px", 
-                    textTransform: "none", 
-                    fontWeight: 700, 
-                    color: "#0f172a" 
+                  sx={{
+                    justifyContent: "flex-start",
+                    py: 1.5,
+                    px: 2.5,
+                    border: "1.5px solid #e2e8f0",
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    color: "#0f172a"
                   }}
                 >
                   Скачать текстовый отчет (.txt)
                 </Button>
-                <Button 
-                  variant="contained" 
-                  fullWidth 
+                <Button
+                  variant="contained"
+                  fullWidth
                   startIcon={<TrendingUpIcon />}
                   onClick={() => setShowVisualDashboard(true)}
-                  sx={{ 
-                    justifyContent: "flex-start", 
-                    py: 1.5, 
-                    px: 2.5, 
+                  sx={{
+                    justifyContent: "flex-start",
+                    py: 1.5,
+                    px: 2.5,
                     bgcolor: "#0040b0",
-                    borderRadius: "10px", 
-                    textTransform: "none", 
-                    fontWeight: 700, 
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    fontWeight: 700,
                     color: "#ffffff",
                     "&:hover": { bgcolor: "#003390" }
                   }}
@@ -1535,7 +1492,7 @@ ID Экзамена: ${selectedExamForReport.id}
                 Визуальный отчет: {selectedExamForReport?.title}
               </Typography>
 
-              {/* Power BI style interactive visualization */}
+              {}
               <Paper sx={{ p: 3, border: "1.5px solid #0040b0", bgcolor: "#f8fafc", borderRadius: "12px", boxShadow: "none" }}>
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={6}>
@@ -1550,9 +1507,9 @@ ID Экзамена: ${selectedExamForReport.id}
 
                 <Divider sx={{ my: 1.5 }} />
 
-                {/* Score distribution bar charts */}
+                {}
                 <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", mb: 1.5 }}>РАСПРЕДЕЛЕНИЕ ОЦЕНОК</Typography>
-                
+
                 <Stack spacing={1}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="caption" sx={{ width: 60, fontWeight: 700, color: "#334155" }}>90% - 100%</Typography>
@@ -1584,20 +1541,20 @@ ID Экзамена: ${selectedExamForReport.id}
                   </Box>
                 </Stack>
               </Paper>
-              
+
               <Box display="flex" gap={1.5} sx={{ mt: 1 }}>
-                <Button 
-                  onClick={() => setShowVisualDashboard(false)} 
-                  variant="outlined" 
-                  fullWidth 
+                <Button
+                  onClick={() => setShowVisualDashboard(false)}
+                  variant="outlined"
+                  fullWidth
                   sx={{ textTransform: "none", fontWeight: 700, borderRadius: "8px" }}
                 >
                   Назад
                 </Button>
-                <Button 
-                  onClick={downloadPngDashboard} 
-                  variant="contained" 
-                  fullWidth 
+                <Button
+                  onClick={downloadPngDashboard}
+                  variant="contained"
+                  fullWidth
                   sx={{ bgcolor: "#0040b0", textTransform: "none", fontWeight: 700, borderRadius: "8px" }}
                 >
                   Скачать PNG граффик
@@ -1613,7 +1570,7 @@ ID Экзамена: ${selectedExamForReport.id}
         </DialogActions>
       </Dialog>
 
-      {/* Fullscreen Interactive Exam Designer */}
+      {}
       <Dialog
         fullScreen
         open={isCreatorOpen}
@@ -1632,7 +1589,7 @@ ID Экзамена: ${selectedExamForReport.id}
           }
         }}
       >
-        {/* Step 1 View: Settings and File Drop */}
+        {}
         {creatorStep === 1 && (
           <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "#f8fafc" }}>
             <Box sx={{ p: 3, borderBottom: "1px solid #e2e8f0", bgcolor: "#ffffff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1654,18 +1611,18 @@ ID Экзамена: ${selectedExamForReport.id}
                 <CloseIcon />
               </IconButton>
             </Box>
-            
+
             <Box sx={{ flexGrow: 1, p: 4, display: "flex", justifyContent: "center", alignItems: "center" }}>
               <Paper sx={{ p: 4, maxWidth: 650, width: "100%", border: "1px solid #e2e8f0", borderRadius: "16px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.05)" }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: "#0f172a" }}>Шаг 1: Подготовка файлов препаратов к экзамену</Typography>
-                
+
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
 
                   <Typography variant="body2" sx={{ fontWeight: 750, color: "#475569" }}>
                     Загрузить новые препараты (SVS, TIF, PNG, JPG, JPEG)
                   </Typography>
 
-                  {/* Drag & Drop Area */}
+                  {}
                   <Box
                     onClick={() => document.getElementById("slide-file-input")?.click()}
                     onDragOver={(e) => e.preventDefault()}
@@ -1729,7 +1686,7 @@ ID Экзамена: ${selectedExamForReport.id}
                             const val = e.target.value;
                             const ids = typeof val === 'string' ? val.split(',') : val;
                             setSelectedExistingSlideIds(ids);
-                            
+
                             const slides = existingSlides.filter(s => ids.includes(s.id));
                             setExamSlides(prev => {
                               const uploaded = prev.filter(p => !existingSlides.some(es => es.id === p.id));
@@ -1765,25 +1722,25 @@ ID Экзамена: ${selectedExamForReport.id}
                       </Typography>
                       <Stack spacing={1} sx={{ maxHeight: 180, overflowY: "auto", pr: 0.5 }}>
                         {examSlides.map((slide, idx) => (
-                          <Paper 
-                            key={slide.id} 
-                            variant="outlined" 
-                            sx={{ 
-                              p: 1.2, 
-                              px: 2, 
-                              display: "flex", 
-                              justifyContent: "space-between", 
-                              alignItems: "center", 
-                              borderRadius: "8px", 
+                          <Paper
+                            key={slide.id}
+                            variant="outlined"
+                            sx={{
+                              p: 1.2,
+                              px: 2,
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              borderRadius: "8px",
                               bgcolor: "#f8fafc",
-                              border: "1px solid #e2e8f0" 
+                              border: "1px solid #e2e8f0"
                             }}
                           >
                             <Typography variant="body2" sx={{ fontWeight: 700, fontSize: "0.78rem", color: "#334155" }}>
                               {idx + 1}. {slide.title}
                             </Typography>
-                            <IconButton 
-                              size="small" 
+                            <IconButton
+                              size="small"
                               onClick={() => {
                                 setExamSlides(examSlides.filter(s => s.id !== slide.id));
                                 setSelectedExistingSlideIds(selectedExistingSlideIds.filter(id => id !== slide.id));
@@ -1817,10 +1774,10 @@ ID Экзамена: ${selectedExamForReport.id}
           </Box>
         )}
 
-        {/* Step 2 View: Visual Hotspot Editor (Paint-like Layout) */}
+        {}
         {creatorStep === 2 && uploadedSlideId && (
           <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "#ffffff", overflow: "hidden" }}>
-            {/* Top Editor Bar */}
+            {}
             <Box
               sx={{
                 p: 2,
@@ -1867,9 +1824,9 @@ ID Экзамена: ${selectedExamForReport.id}
               </Box>
             </Box>
 
-            {/* Split Editor Layout */}
+            {}
             <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden", position: "relative" }}>
-              {/* Left Sidebar: Hotspots / Questions List */}
+              {}
               <Paper
                 elevation={0}
                 sx={{
@@ -1913,8 +1870,8 @@ ID Экзамена: ${selectedExamForReport.id}
                         const isCurrentActive = reg.slideId === uploadedSlideId;
 
                         return (
-                          <Card 
-                            key={reg.id} 
+                          <Card
+                            key={reg.id}
                             draggable
                             onDragStart={() => handleDragStart(idx)}
                             onDragOver={handleDragOver}
@@ -1925,9 +1882,9 @@ ID Экзамена: ${selectedExamForReport.id}
                                 if (slide) setSlideTitle(slide.title);
                               }
                             }}
-                            sx={{ 
-                              border: isCurrentActive ? "2px solid #0040b0" : "1px solid #e2e8f0", 
-                              boxShadow: "none", 
+                            sx={{
+                              border: isCurrentActive ? "2px solid #0040b0" : "1px solid #e2e8f0",
+                              boxShadow: "none",
                               borderRadius: "8px",
                               cursor: "grab",
                               transition: "background-color 0.2s, border-color 0.2s",
@@ -1946,8 +1903,8 @@ ID Экзамена: ${selectedExamForReport.id}
                                     </Typography>
                                     <Box display="flex" alignItems="center" gap={0.5}>
                                       {flaggedRegionIds.includes(reg.id) && (
-                                        <IconButton 
-                                          size="small" 
+                                        <IconButton
+                                          size="small"
                                           onClick={async (e) => {
                                             e.stopPropagation();
                                             if (window.confirm(`Вы действительно хотите снять отметку об ошибке с вопроса "${reg.title}"?`)) {
@@ -2001,12 +1958,12 @@ ID Экзамена: ${selectedExamForReport.id}
                 </Box>
               </Paper>
 
-              {/* Center Panel: Interactive Microscope Canvas */}
+              {}
               <Box sx={{ flexGrow: 1, height: "100%", position: "relative" }}>
                 <SlideViewer slideId={uploadedSlideId} isTeacher={true} />
               </Box>
 
-              {/* Right Panel: Selected Slides / Files */}
+              {}
               <Paper
                 elevation={0}
                 sx={{
@@ -2034,11 +1991,11 @@ ID Экзамена: ${selectedExamForReport.id}
                       const imgUrl = cardImages[idx % cardImages.length];
 
                       return (
-                        <Card 
-                          key={slide.id} 
-                          sx={{ 
-                            border: isActive ? "2px solid #0040b0" : "1px solid #e2e8f0", 
-                            boxShadow: "none", 
+                        <Card
+                          key={slide.id}
+                          sx={{
+                            border: isActive ? "2px solid #0040b0" : "1px solid #e2e8f0",
+                            boxShadow: "none",
                             borderRadius: "10px",
                             bgcolor: isActive ? "rgba(0,64,176,0.02)" : "#ffffff"
                           }}
@@ -2048,7 +2005,7 @@ ID Экзамена: ${selectedExamForReport.id}
                             <Typography variant="body2" sx={{ fontWeight: 800, color: "#0f172a", fontSize: "0.8rem", mb: 1, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
                               {slide.title}
                             </Typography>
-                            
+
                             <Box display="flex" justifyContent="space-between" gap={1}>
                               <Button
                                 variant={isActive ? "contained" : "outlined"}
@@ -2058,11 +2015,11 @@ ID Экзамена: ${selectedExamForReport.id}
                                   setUploadedSlideId(slide.id);
                                   setSlideTitle(slide.title);
                                 }}
-                                sx={{ 
-                                  flexGrow: 1, 
-                                  fontSize: "0.7rem", 
-                                  py: 0.5, 
-                                  textTransform: "none", 
+                                sx={{
+                                  flexGrow: 1,
+                                  fontSize: "0.7rem",
+                                  py: 0.5,
+                                  textTransform: "none",
                                   fontWeight: 700,
                                   borderRadius: "6px"
                                 }}
@@ -2102,7 +2059,7 @@ ID Экзамена: ${selectedExamForReport.id}
         )}
       </Dialog>
 
-      {/* Exam Settings / Assignees Dialog */}
+      {}
       <Dialog
         open={settingsDialogOpen}
         onClose={() => setSettingsDialogOpen(false)}
@@ -2121,7 +2078,7 @@ ID Экзамена: ${selectedExamForReport.id}
             onChange={(e) => setNewExamTitle(e.target.value)}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
-          
+
           <Box display="flex" gap={2}>
             <TextField
               label="Длительность (минут)"
@@ -2151,7 +2108,7 @@ ID Экзамена: ${selectedExamForReport.id}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
             />
           </Box>
-          
+
           <DateRangePicker
             startTime={newExamStartTime}
             endTime={newExamEndTime}
@@ -2160,7 +2117,7 @@ ID Экзамена: ${selectedExamForReport.id}
               setNewExamEndTime(end);
             }}
           />
-          
+
           <FormControl fullWidth size="small">
             <InputLabel id="assign-groups-label">Назначить группам (опционально)</InputLabel>
             <Select
@@ -2186,7 +2143,7 @@ ID Экзамена: ${selectedExamForReport.id}
               ))}
             </Select>
           </FormControl>
-          
+
           <FormControl fullWidth size="small">
             <InputLabel id="assign-students-label">Назначить студентам (опционально)</InputLabel>
             <Select

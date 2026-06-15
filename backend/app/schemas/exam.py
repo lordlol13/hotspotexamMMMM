@@ -4,7 +4,6 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from app.models.enums import QuestionType
 
-# --- Options ---
 class QuestionOptionBase(BaseModel):
     option_text: str
     is_correct: bool = False
@@ -20,8 +19,6 @@ class QuestionOptionResponse(QuestionOptionBase):
     class Config:
         from_attributes = True
 
-
-# --- Questions ---
 class ExamQuestionBase(BaseModel):
     question_text: str
     question_type: QuestionType
@@ -42,8 +39,6 @@ class ExamQuestionResponse(ExamQuestionBase):
     class Config:
         from_attributes = True
 
-
-# --- Exams ---
 class ExamBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
@@ -85,14 +80,12 @@ class ExamResponse(ExamBase):
     class Config:
         from_attributes = True
 
-
-# --- Attempt Answers ---
 class AttemptAnswerSubmit(BaseModel):
     question_id: uuid.UUID
-    selected_option_id: Optional[uuid.UUID] = None  # Single choice
-    selected_option_ids: Optional[List[uuid.UUID]] = None  # Multiple choice
-    text_answer: Optional[str] = None  # Short Answer & Essay
-    annotation_data: Optional[Dict[str, Any]] = None  # Slide Annotation click coordinates
+    selected_option_id: Optional[uuid.UUID] = None
+    selected_option_ids: Optional[List[uuid.UUID]] = None
+    text_answer: Optional[str] = None
+    annotation_data: Optional[Dict[str, Any]] = None
 
 class AttemptAnswerResponse(BaseModel):
     id: uuid.UUID
@@ -111,8 +104,6 @@ class AttemptAnswerResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- Attempts ---
 class ExamAttemptStart(BaseModel):
     exam_id: uuid.UUID
 
@@ -136,8 +127,6 @@ class ExamAttemptResponse(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- Retakes ---
 class ExamRetakeCreate(BaseModel):
     exam_id: uuid.UUID
     student_id: uuid.UUID

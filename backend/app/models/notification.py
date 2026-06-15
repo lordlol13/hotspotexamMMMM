@@ -16,5 +16,4 @@ class Notification(Base):
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    # Relationships
     user: Mapped["User"] = relationship("User", back_populates="notifications")

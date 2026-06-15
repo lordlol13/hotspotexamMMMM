@@ -9,7 +9,6 @@ from app.models.slide import Slide
 from app.models.exam import Exam
 from app.models.user import User
 
-
 class AccessService:
     @staticmethod
     def require_course_manager(db: Session, course_id: uuid.UUID, user: User) -> Course:

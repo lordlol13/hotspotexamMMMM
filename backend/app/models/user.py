@@ -31,33 +31,30 @@ class User(Base):
     hide_grades: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # 1-to-1 relationships for profiles
     student_profile: Mapped[Optional["Student"]] = relationship(
-        "Student", 
-        back_populates="user", 
-        uselist=False, 
+        "Student",
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan"
     )
     teacher_profile: Mapped[Optional["Teacher"]] = relationship(
-        "Teacher", 
-        back_populates="user", 
-        uselist=False, 
+        "Teacher",
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan"
     )
 
-    # Relationships
     slides: Mapped[List["Slide"]] = relationship("Slide", back_populates="uploader", cascade="all, delete-orphan")
     audit_logs: Mapped[List["AuditLog"]] = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
     notifications: Mapped[List["Notification"]] = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     slide_view_logs: Mapped[List["SlideViewLog"]] = relationship("SlideViewLog", back_populates="user", cascade="all, delete-orphan")
     annotations: Mapped[List["Annotation"]] = relationship("Annotation", back_populates="user", cascade="all, delete-orphan")
-
 
 class Student(Base):
     __tablename__ = "students"
@@ -69,13 +66,12 @@ class Student(Base):
     group_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("groups.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     user: Mapped["User"] = relationship("User", back_populates="student_profile")
     group: Mapped[Optional["Group"]] = relationship("Group", back_populates="students")
     exam_attempts: Mapped[List["ExamAttempt"]] = relationship("ExamAttempt", back_populates="student", cascade="all, delete-orphan")
@@ -87,7 +83,6 @@ class Student(Base):
         back_populates="students"
     )
 
-
 class Teacher(Base):
     __tablename__ = "teachers"
 
@@ -96,12 +91,11 @@ class Teacher(Base):
     title: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     user: Mapped["User"] = relationship("User", back_populates="teacher_profile")
     courses: Mapped[List["Course"]] = relationship("Course", back_populates="teacher", cascade="all, delete-orphan")

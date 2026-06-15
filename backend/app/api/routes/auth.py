@@ -4,10 +4,10 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.user import (
-    StudentRegister, 
-    TeacherRegister, 
-    UserResponse, 
-    Token, 
+    StudentRegister,
+    TeacherRegister,
+    UserResponse,
+    Token,
     UserLogin,
     EmailVerificationConfirm,
     PasswordResetRequest,
@@ -94,7 +94,7 @@ def refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token"
         )
-    
+
     user_id = token_payload.get("sub")
     user = db.query(User).filter(User.id == user_id).first()
     if not user or not user.is_active:
@@ -102,7 +102,7 @@ def refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive"
         )
-        
+
     access_token = create_access_token(subject=user.id, role=user.role.value)
     new_refresh_token = create_refresh_token(subject=user.id)
     return {

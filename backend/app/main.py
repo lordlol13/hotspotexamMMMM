@@ -27,7 +27,6 @@ app = FastAPI(
     redoc_url="/redoc" if settings.ENABLE_DOCS else None,
 )
 
-
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
     request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
@@ -50,7 +49,6 @@ async def request_logging_middleware(request: Request, call_next):
     )
     return response
 
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning("request_validation_failed", extra={"method": request.method, "path": request.url.path})
@@ -59,18 +57,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"error": {"code": "validation_error", "message": "Request validation failed", "details": exc.errors()}},
     )
 
-
 @app.exception_handler(SQLAlchemyError)
 async def database_exception_handler(request: Request, exc: SQLAlchemyError):
     logger.exception("database_error", extra={"method": request.method, "path": request.url.path})
     return JSONResponse(status_code=503, content={"error": {"code": "database_unavailable", "message": "Database operation failed"}})
 
-
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("unhandled_error", extra={"method": request.method, "path": request.url.path})
     return JSONResponse(status_code=500, content={"error": {"code": "internal_error", "message": "Internal server error"}})
-
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -84,23 +79,19 @@ if settings.BACKEND_CORS_ORIGINS:
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Digital Microscopy Platform API"}
 
-
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
 
 @app.get("/ready")
 def readiness_check():
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
     return {"status": "ready"}
-
 
 @app.get("/api/v1/test-teacher-only")
 def test_teacher_only(current_user=Depends(RoleChecker([UserRole.TEACHER]))):

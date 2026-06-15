@@ -11,12 +11,10 @@ from app.models.user import User
 
 router = APIRouter()
 
-
 @router.get("/public", status_code=status.HTTP_200_OK)
 def list_groups_public(db: Session = Depends(get_db)):
     """Получить список всех групп без авторизации (для формы регистрации)."""
     return GroupService.get_all_groups(db)
-
 
 @router.get("/", status_code=status.HTTP_200_OK)
 def list_groups(
@@ -25,7 +23,6 @@ def list_groups(
 ):
     """Получить список всех групп с количеством студентов."""
     return GroupService.get_all_groups(db)
-
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_group(
@@ -36,7 +33,6 @@ def create_group(
     """Создать новую группу."""
     return GroupService.create_group(db, data)
 
-
 @router.put("/{group_id}", status_code=status.HTTP_200_OK)
 def update_group(
     group_id: uuid.UUID,
@@ -46,7 +42,6 @@ def update_group(
 ):
     """Обновить группу."""
     return GroupService.update_group(db, group_id, data)
-
 
 @router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_group(

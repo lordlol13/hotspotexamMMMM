@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../App";
-import { 
-  Box, Button, Card, CardContent, FormControlLabel, Radio, 
-  RadioGroup, Checkbox, TextField, Typography, Grid, Paper, 
-  CircularProgress, Dialog, DialogTitle, DialogContent, 
+import {
+  Box, Button, Card, CardContent, FormControlLabel, Radio,
+  RadioGroup, Checkbox, TextField, Typography, Grid, Paper,
+  CircularProgress, Dialog, DialogTitle, DialogContent,
   DialogContentText, DialogActions, FormLabel, FormControl, FormGroup,
   Divider, LinearProgress, IconButton, Stack, Chip, ToggleButtonGroup, ToggleButton,
   InputLabel, Select, MenuItem
@@ -69,14 +69,14 @@ export const ExamTakePage: React.FC = () => {
   const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [exam, setExam] = useState<Exam | null>(null);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerState>>({});
-  
+
   const [currentIdx, setCurrentIdx] = useState(0);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -85,8 +85,7 @@ export const ExamTakePage: React.FC = () => {
   const [filterGroup, setFilterGroup] = useState<string>("104-МФ");
   const [filterCourse, setFilterCourse] = useState<string>("all");
   const [filterUniversity, setFilterUniversity] = useState<string>("all");
-  
-  // Hotspot review Dialog states
+
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewQuestion, setReviewQuestion] = useState<Question | null>(null);
   const [reviewAnswer, setReviewAnswer] = useState<any | null>(null);
@@ -114,7 +113,6 @@ export const ExamTakePage: React.FC = () => {
     return rank.toString();
   };
 
-  // 1. Fetch exam details and start/resume attempt
   useEffect(() => {
     if (!examId) return;
 
@@ -160,7 +158,6 @@ export const ExamTakePage: React.FC = () => {
     loadExamAndAttempt();
   }, [examId, user]);
 
-  // Save answers to localstorage on change
   useEffect(() => {
     const isTeacher = user?.role === "teacher" || user?.role === "admin";
     if (examId && Object.keys(answers).length > 0 && !isTeacher) {
@@ -211,7 +208,6 @@ export const ExamTakePage: React.FC = () => {
     }
   };
 
-  // Answer modification handlers
   const handleSingleChoiceChange = (qId: string, optId: string) => {
     setAnswers(prev => ({
       ...prev,
@@ -230,10 +226,10 @@ export const ExamTakePage: React.FC = () => {
     setAnswers(prev => {
       const currentAnswer = prev[qId] || { question_id: qId, selected_option_ids: [] };
       const currentIds = currentAnswer.selected_option_ids || [];
-      const nextIds = checked 
-        ? [...currentIds, optId] 
+      const nextIds = checked
+        ? [...currentIds, optId]
         : currentIds.filter(id => id !== optId);
-      
+
       return {
         ...prev,
         [qId]: { ...currentAnswer, selected_option_ids: nextIds }
@@ -255,23 +251,22 @@ export const ExamTakePage: React.FC = () => {
     }));
   };
 
-  // Submit attempt to backend
   const handleSubmitting = async (forceTimeout = false) => {
     if (forceTimeout) {
       console.warn("Attempt submitted automatically due to exam timer timeout.");
     }
     setSubmitDialogOpen(false);
     setSubmitting(true);
-    
+
     const isTeacher = user?.role === "teacher" || user?.role === "admin";
-    
+
     if (isTeacher && attempt) {
       try {
         const answersList = exam!.questions.map(q => {
           const state = answers[q.id];
           let pointsAwarded = 0.0;
           let correctOptionId: string | null = null;
-          
+
           if (q.question_type === "single_choice" || q.question_type === "true_false") {
             const correctOpt = q.options.find((o: any) => o.is_correct);
             correctOptionId = correctOpt ? correctOpt.id : null;
@@ -293,14 +288,14 @@ export const ExamTakePage: React.FC = () => {
               }
             }
           } else if (q.question_type === "point_on_image") {
-            // Check coordinate matching
+
             const roi = q.region_of_interest;
             if (roi && state?.annotation_data) {
               const px = state.annotation_data.x;
               const py = state.annotation_data.y;
               const region_type = roi.region_type;
               const geom = roi.geometry || {};
-              
+
               if (region_type === "rectangle") {
                 const rx = geom.x || 0;
                 const ry = geom.y || 0;
@@ -352,7 +347,7 @@ export const ExamTakePage: React.FC = () => {
           } else {
             pointsAwarded = q.points;
           }
-          
+
           return {
             id: Math.random().toString(),
             attempt_id: "preview",
@@ -367,10 +362,10 @@ export const ExamTakePage: React.FC = () => {
             correct_option_id: correctOptionId
           };
         });
-        
+
         const totalScore = answersList.reduce((sum, a) => sum + (a.points_awarded || 0), 0);
         const maxPossibleScore = exam!.questions.reduce((sum, q) => sum + q.points, 0);
-        
+
         setResult({
           id: "preview",
           exam_id: exam!.id,
@@ -431,7 +426,7 @@ export const ExamTakePage: React.FC = () => {
       const res = await axios.post(`/api/v1/exams/attempts/${attempt.id}/submit`, {
         answers: mappedAnswers
       });
-      
+
       setResult(res.data);
       localStorage.removeItem(`exam_answers_${examId}`);
     } catch (e: any) {
@@ -456,7 +451,6 @@ export const ExamTakePage: React.FC = () => {
       return `${correctCount}/${totalQuestions}`;
     };
 
-    // Rich mock dataset containing Group, Course, University for participants
     const leaderboardStudents = [
       { name: "Екатерина Ковалева", group: "102-МФ", course: "3 курс", university: "Первый МГМУ им. Сеченова", score: 100, correct: getCorrectStr(100), time: "04:12", isSelf: false },
       { name: "Иван Савельев", group: "103-МФ", course: "2 курс", university: "МГУ им. Ломоносова", score: 100, correct: getCorrectStr(100), time: "04:30", isSelf: false },
@@ -481,13 +475,12 @@ export const ExamTakePage: React.FC = () => {
     const coursesList = Array.from(new Set(leaderboardStudents.map(s => s.course))).sort();
     const universitiesList = Array.from(new Set(leaderboardStudents.map(s => s.university))).sort();
 
-    // Filter based on UI filters
     const filteredStudents = leaderboardStudents.filter(stud => {
-      // 1. Group Filter
+
       if (filterGroup !== "all" && stud.group !== filterGroup) return false;
-      // 2. Course Filter
+
       if (filterCourse !== "all" && stud.course !== filterCourse) return false;
-      // 3. University Filter
+
       if (filterUniversity !== "all" && stud.university !== filterUniversity) return false;
       return true;
     });
@@ -499,7 +492,6 @@ export const ExamTakePage: React.FC = () => {
       return a.time.localeCompare(b.time);
     });
 
-    // Dynamic average time calculation
     const getAvgTime = () => {
       if (uniqueStudents.length === 0) return "00:00";
       let totalSeconds = 0;
@@ -518,7 +510,7 @@ export const ExamTakePage: React.FC = () => {
     return (
       <Box display="flex" flexDirection="column" minHeight="100vh" bgcolor="#f8fafc" sx={{ overflowY: "auto", p: { xs: 2, md: 4 } }}>
         <Grid container spacing={4} sx={{ width: "100%", mx: "auto" }}>
-          {/* Left Side: Score card and Detailed breakdown */}
+          {}
           <Grid item xs={12} md={4} sx={{ width: { md: "30%" }, flexBasis: { md: "30%" }, maxWidth: { md: "30%" } }}>
             <Card sx={{ p: 4, textAlign: "center", border: "1px solid #e2e8f0", mb: 4, borderRadius: "14px", boxShadow: "none" }}>
               <CheckCircleOutlineIcon sx={{ fontSize: 64, color: "success.main", mb: 2 }} />
@@ -526,8 +518,8 @@ export const ExamTakePage: React.FC = () => {
                 Экзамен завершен!
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                {user?.role === "teacher" || user?.role === "admin" 
-                  ? "Режим предпросмотра преподавателя. Оценка не была записана в базу данных." 
+                {user?.role === "teacher" || user?.role === "admin"
+                  ? "Режим предпросмотра преподавателя. Оценка не была записана в базу данных."
                   : "Ваш результат успешно зафиксирован и сохранен в системе."}
               </Typography>
 
@@ -572,8 +564,8 @@ export const ExamTakePage: React.FC = () => {
                 </Box>
               )}
 
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={() => navigate("/exams")}
                 sx={{ mt: 3.5, py: 1.2, px: 4, fontWeight: 700, bgcolor: "#0040b0", borderRadius: "8px", textTransform: "none" }}
               >
@@ -581,20 +573,20 @@ export const ExamTakePage: React.FC = () => {
               </Button>
             </Card>
 
-            {/* Detailed results breakdown */}
+            {}
             {result.answers && result.answers.length > 0 && (
               <Box sx={{ width: "100%", textAlign: "left" }}>
                 <Typography variant="h5" fontWeight={855} color="#0f172a" sx={{ mb: 3 }}>
                   Детальный разбор результатов
                 </Typography>
-                
+
                 <Stack spacing={3}>
                   {result.answers.map((ans: any, idx: number) => {
                     const q = exam.questions.find((question: any) => question.id === ans.question_id);
                     if (!q) return null;
-                    
+
                     const isAnswerCorrect = ans.points_awarded === q.points;
-                    
+
                     return (
                       <Card key={ans.id} sx={{ border: "1px solid #e2e8f0", boxShadow: "none", borderRadius: "14px", overflow: "hidden" }}>
                         <Box sx={{ p: 2.5, bgcolor: isAnswerCorrect ? "rgba(22, 101, 52, 0.03)" : "rgba(239, 68, 68, 0.03)", borderBottom: "1px solid #e2e8f0" }}>
@@ -604,19 +596,19 @@ export const ExamTakePage: React.FC = () => {
                             </Typography>
                             <Box display="flex" alignItems="center" gap={1} sx={{ ml: 2, flexShrink: 0 }}>
                               {isAnswerCorrect ? (
-                                <Chip 
-                                  size="small" 
-                                  color="success" 
-                                  label="Верно" 
-                                  icon={<CheckCircleOutlineIcon />} 
+                                <Chip
+                                  size="small"
+                                  color="success"
+                                  label="Верно"
+                                  icon={<CheckCircleOutlineIcon />}
                                   sx={{ fontWeight: 800, borderRadius: "6px" }}
                                 />
                               ) : (
-                                <Chip 
-                                  size="small" 
-                                  color="error" 
-                                  label="Неверно" 
-                                  icon={<CancelOutlinedIcon />} 
+                                <Chip
+                                  size="small"
+                                  color="error"
+                                  label="Неверно"
+                                  icon={<CancelOutlinedIcon />}
                                   sx={{ fontWeight: 800, borderRadius: "6px" }}
                                 />
                               )}
@@ -626,9 +618,9 @@ export const ExamTakePage: React.FC = () => {
                             </Box>
                           </Box>
                         </Box>
-                        
+
                         <CardContent sx={{ p: 2.5 }}>
-                          {/* Options list for choice questions */}
+                          {}
                           {(q.question_type === "single_choice" || q.question_type === "true_false" || q.question_type === "multiple_choice") && (
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
                               <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -639,11 +631,11 @@ export const ExamTakePage: React.FC = () => {
                                   ? ans.selected_option_ids?.includes(opt.id)
                                   : ans.selected_option_id === opt.id;
                                 const isCorrectOption = ans.correct_option_id === opt.id;
-                                
+
                                 let itemBg = "transparent";
                                 let itemBorder = "1px solid #e2e8f0";
                                 let labelBadge = null;
-                                
+
                                 if (isSelected && isCorrectOption) {
                                   itemBg = "#f0fdf4";
                                   itemBorder = "1.5px solid #bbf7d0";
@@ -657,14 +649,14 @@ export const ExamTakePage: React.FC = () => {
                                   itemBorder = "1.5px solid #bbf7d0";
                                   labelBadge = "Правильный ответ";
                                 }
-                                
+
                                 return (
-                                  <Box 
-                                    key={opt.id} 
-                                    sx={{ 
-                                      p: 1.5, 
-                                      bgcolor: itemBg, 
-                                      border: itemBorder, 
+                                  <Box
+                                    key={opt.id}
+                                    sx={{
+                                      p: 1.5,
+                                      bgcolor: itemBg,
+                                      border: itemBorder,
                                       borderRadius: "8px",
                                       display: "flex",
                                       justifyContent: "space-between",
@@ -675,10 +667,10 @@ export const ExamTakePage: React.FC = () => {
                                       {opt.option_text}
                                     </Typography>
                                     {labelBadge && (
-                                      <Chip 
-                                        size="small" 
-                                        label={labelBadge} 
-                                        color={isCorrectOption ? "success" : "error"} 
+                                      <Chip
+                                        size="small"
+                                        label={labelBadge}
+                                        color={isCorrectOption ? "success" : "error"}
                                         variant="outlined"
                                         sx={{ fontSize: "0.72rem", fontWeight: 800, height: 22, borderRadius: "6px" }}
                                       />
@@ -688,8 +680,8 @@ export const ExamTakePage: React.FC = () => {
                               })}
                             </Box>
                           )}
-                          
-                          {/* Text answer for short_answer and essay */}
+
+                          {}
                           {(q.question_type === "short_answer" || q.question_type === "essay") && (
                             <Box sx={{ mb: 2 }}>
                               <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -702,8 +694,8 @@ export const ExamTakePage: React.FC = () => {
                               </Box>
                             </Box>
                           )}
-                          
-                          {/* Point on image answer display and review button */}
+
+                          {}
                           {q.question_type === "point_on_image" && (
                             <Box sx={{ mb: 2 }}>
                               <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -711,8 +703,8 @@ export const ExamTakePage: React.FC = () => {
                               </Typography>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
                                 <Typography variant="body2" color="#334155" fontWeight={700}>
-                                  {ans?.annotation_data?.x 
-                                    ? `Указана точка: X=${ans.annotation_data.x.toFixed(1)}%, Y=${ans.annotation_data.y.toFixed(1)}%` 
+                                  {ans?.annotation_data?.x
+                                    ? `Указана точка: X=${ans.annotation_data.x.toFixed(1)}%, Y=${ans.annotation_data.y.toFixed(1)}%`
                                     : "Ответ отсутствует"}
                                 </Typography>
                                 <Button
@@ -727,8 +719,8 @@ export const ExamTakePage: React.FC = () => {
                               </Box>
                             </Box>
                           )}
-                          
-                          {/* Show Explanation Panel if available */}
+
+                          {}
                           {(ans.explanation || ans.explanation_image || ans.explanation_video) && (
                             <Box sx={{ mt: 2.5, p: 2.2, bgcolor: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "10px" }}>
                               <Box display="flex" alignItems="center" gap={1.2} mb={1.5}>
@@ -737,29 +729,29 @@ export const ExamTakePage: React.FC = () => {
                                   Объяснение правильного ответа
                                 </Typography>
                               </Box>
-                              
+
                               {ans.explanation && (
                                 <Typography variant="body2" color="#0e7490" sx={{ lineHeight: 1.55 }}>
                                   {ans.explanation}
                                 </Typography>
                               )}
-                              
+
                               {ans.explanation_image && (
                                 <Box sx={{ mt: 1.8, overflow: "hidden", borderRadius: "8px", border: "1px solid #bae6fd" }}>
-                                  <img 
-                                    src={ans.explanation_image} 
-                                    alt="Объяснение" 
+                                  <img
+                                    src={ans.explanation_image}
+                                    alt="Объяснение"
                                     style={{ maxWidth: "100%", maxHeight: 350, display: "block", borderRadius: "8px", objectFit: "contain" }}
                                   />
                                 </Box>
                               )}
-                              
+
                               {ans.explanation_video && (
                                 <Box sx={{ mt: 1.8 }}>
-                                  <Button 
-                                    variant="outlined" 
-                                    color="primary" 
-                                    size="small" 
+                                  <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
                                     startIcon={<LaunchIcon />}
                                     href={ans.explanation_video}
                                     target="_blank"
@@ -781,15 +773,15 @@ export const ExamTakePage: React.FC = () => {
             )}
           </Grid>
 
-            {/* Right Side: Leaderboard Panel */}
+            {}
           <Grid item xs={12} md={8} sx={{ width: { md: "70%" }, flexBasis: { md: "70%" }, maxWidth: { md: "70%" } }}>
-            <Paper 
-              sx={{ 
-                p: 3, 
-                border: "1px solid #e2e8f0", 
-                borderRadius: "14px", 
-                boxShadow: "none", 
-                position: { xs: "static", md: "sticky" }, 
+            <Paper
+              sx={{
+                p: 3,
+                border: "1px solid #e2e8f0",
+                borderRadius: "14px",
+                boxShadow: "none",
+                position: { xs: "static", md: "sticky" },
                 top: 32,
                 height: { xs: "auto", md: "calc(100vh - 64px)" },
                 display: "flex",
@@ -803,7 +795,7 @@ export const ExamTakePage: React.FC = () => {
                 </Typography>
               </Box>
 
-              {/* Leaderboard Statistics */}
+              {}
               <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={4}>
                   <Box sx={{ p: 1.5, bgcolor: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0", textAlign: "center" }}>
@@ -846,7 +838,7 @@ export const ExamTakePage: React.FC = () => {
                 size="small"
                 color="primary"
                 fullWidth
-                sx={{ 
+                sx={{
                   mb: 2,
                   "& .MuiToggleButton-root": {
                     py: 1,
@@ -874,7 +866,7 @@ export const ExamTakePage: React.FC = () => {
                 </ToggleButton>
               </ToggleButtonGroup>
 
-              {/* Advanced Filters: Group, Course, University */}
+              {}
               <Grid container spacing={1.5} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={4}>
                   <FormControl size="small" fullWidth>
@@ -968,23 +960,23 @@ export const ExamTakePage: React.FC = () => {
                 </Grid>
               </Grid>
 
-              {/* Podium */}
+              {}
               {(() => {
                 const topThree = uniqueStudents.slice(0, 3);
                 if (topThree.length < 3) return null;
                 return (
                   <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-end", gap: { xs: 1.5, sm: 3 }, mb: 4.5, mt: 1, px: 1 }}>
-                    {/* 2nd Place */}
+                    {}
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, maxWidth: 140 }}>
                       <Typography variant="caption" fontWeight={800} align="center" noWrap sx={{ width: "100%", mb: 1, color: "#475569" }}>
                         {topThree[1].name}
                       </Typography>
-                      <Box sx={{ 
-                        width: "100%", 
-                        height: 70, 
-                        bgcolor: "#f1f5f9", 
-                        border: "1px solid #e2e8f0", 
-                        borderTopLeftRadius: "10px", 
+                      <Box sx={{
+                        width: "100%",
+                        height: 70,
+                        bgcolor: "#f1f5f9",
+                        border: "1px solid #e2e8f0",
+                        borderTopLeftRadius: "10px",
                         borderTopRightRadius: "10px",
                         display: "flex",
                         flexDirection: "column",
@@ -997,17 +989,17 @@ export const ExamTakePage: React.FC = () => {
                       </Box>
                     </Box>
 
-                    {/* 1st Place */}
+                    {}
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, maxWidth: 150 }}>
                       <Typography variant="caption" fontWeight={900} align="center" noWrap sx={{ width: "100%", mb: 1, color: "#0040b0" }}>
                         {topThree[0].name}
                       </Typography>
-                      <Box sx={{ 
-                        width: "100%", 
-                        height: 95, 
-                        bgcolor: "rgba(0,64,176,0.04)", 
-                        border: "2px solid #0040b0", 
-                        borderTopLeftRadius: "14px", 
+                      <Box sx={{
+                        width: "100%",
+                        height: 95,
+                        bgcolor: "rgba(0,64,176,0.04)",
+                        border: "2px solid #0040b0",
+                        borderTopLeftRadius: "14px",
                         borderTopRightRadius: "14px",
                         display: "flex",
                         flexDirection: "column",
@@ -1020,17 +1012,17 @@ export const ExamTakePage: React.FC = () => {
                       </Box>
                     </Box>
 
-                    {/* 3rd Place */}
+                    {}
                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, maxWidth: 140 }}>
                       <Typography variant="caption" fontWeight={800} align="center" noWrap sx={{ width: "100%", mb: 1, color: "#9a3412" }}>
                         {topThree[2].name}
                       </Typography>
-                      <Box sx={{ 
-                        width: "100%", 
-                        height: 55, 
-                        bgcolor: "#fff7ed", 
-                        border: "1px solid #ffedd5", 
-                        borderTopLeftRadius: "10px", 
+                      <Box sx={{
+                        width: "100%",
+                        height: 55,
+                        bgcolor: "#fff7ed",
+                        border: "1px solid #ffedd5",
+                        borderTopLeftRadius: "10px",
                         borderTopRightRadius: "10px",
                         display: "flex",
                         flexDirection: "column",
@@ -1046,12 +1038,12 @@ export const ExamTakePage: React.FC = () => {
                 );
               })()}
 
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   flexGrow: 1,
                   minHeight: 0,
                   maxHeight: { xs: "380px", md: "none" },
-                  overflowY: "auto", 
+                  overflowY: "auto",
                   pr: 1,
                   "&::-webkit-scrollbar": {
                     width: "6px",
@@ -1088,16 +1080,16 @@ export const ExamTakePage: React.FC = () => {
                         }}
                       >
                         <Box display="flex" alignItems="center" gap={2.5} sx={{ width: "100%" }}>
-                          {/* Rank */}
-                          <Typography 
-                            variant="subtitle2" 
-                            fontWeight={900} 
-                            sx={{ 
-                              width: 28, 
-                              height: 28, 
-                              borderRadius: "50%", 
-                              display: "flex", 
-                              alignItems: "center", 
+                          {}
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={900}
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
                               justifyContent: "center",
                               bgcolor: rank === 1 ? "#fef08a" : rank === 2 ? "#e2e8f0" : rank === 3 ? "#ffedd5" : "transparent",
                               color: rank === 1 ? "#854d0e" : rank === 2 ? "#475569" : rank === 3 ? "#9a3412" : "#64748b",
@@ -1108,21 +1100,21 @@ export const ExamTakePage: React.FC = () => {
                             {getRankBadge(rank)}
                           </Typography>
 
-                          {/* Name & Sub-details */}
+                          {}
                           <Box sx={{ flexGrow: 1, minWidth: 150 }}>
                             <Typography variant="body2" fontWeight={stud.isSelf ? 800 : 700} color="#0f172a">
                               {stud.name} {stud.isSelf && "(Вы)"}
                             </Typography>
                             <Box display="flex" alignItems="center" gap={1.5} mt={0.2} flexWrap="wrap">
-                              <Chip 
-                                label={`Гр. ${stud.group} • ${stud.course}`} 
-                                size="small" 
+                              <Chip
+                                label={`Гр. ${stud.group} • ${stud.course}`}
+                                size="small"
                                 variant="outlined"
                                 sx={{ height: 18, fontSize: "0.68rem", fontWeight: 700, px: 0.5, borderColor: "#e2e8f0", color: "#64748b" }}
                               />
-                              <Chip 
-                                label={stud.university} 
-                                size="small" 
+                              <Chip
+                                label={stud.university}
+                                size="small"
                                 variant="outlined"
                                 sx={{ height: 18, fontSize: "0.68rem", fontWeight: 700, px: 0.5, borderColor: "#e3effb", color: "#0040b0", bgcolor: "#f0f7ff" }}
                               />
@@ -1135,20 +1127,20 @@ export const ExamTakePage: React.FC = () => {
                             </Box>
                           </Box>
 
-                          {/* Visual Progress Bar (Score) */}
+                          {}
                           <Box sx={{ display: { xs: "none", sm: "block" }, width: 140, mx: 2, flexShrink: 0 }}>
-                            <LinearProgress 
-                              variant="determinate" 
-                              value={stud.score} 
+                            <LinearProgress
+                              variant="determinate"
+                              value={stud.score}
                               color={stud.score >= exam.passing_score ? "success" : "error"}
                               sx={{ height: 6, borderRadius: 3 }}
                             />
                           </Box>
 
-                          {/* Percentage Score */}
-                          <Typography 
-                            variant="subtitle2" 
-                            fontWeight={900} 
+                          {}
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={900}
                             color={stud.score >= exam.passing_score ? "success.main" : "error.main"}
                             sx={{ minWidth: 45, textAlign: "right", flexShrink: 0 }}
                           >
@@ -1172,19 +1164,19 @@ export const ExamTakePage: React.FC = () => {
 
   return (
     <Box display="flex" flexDirection="column" width="100vw" height="100vh" bgcolor="#f8fafc">
-      <LinearProgress 
-        variant="determinate" 
-        value={progressPct} 
-        sx={{ height: 4 }} 
+      <LinearProgress
+        variant="determinate"
+        value={progressPct}
+        sx={{ height: 4 }}
       />
-      {/* Timer Bar */}
-      <Box 
-        sx={{ 
-          px: 3, 
-          py: 1.5, 
-          borderBottom: "1px solid #e2e8f0", 
-          display: "flex", 
-          alignItems: "center", 
+      {}
+      <Box
+        sx={{
+          px: 3,
+          py: 1.5,
+          borderBottom: "1px solid #e2e8f0",
+          display: "flex",
+          alignItems: "center",
           justifyContent: "space-between",
           bgcolor: "#ffffff"
         }}
@@ -1195,16 +1187,16 @@ export const ExamTakePage: React.FC = () => {
               {exam.title}
             </Typography>
             {(user?.role === "teacher" || user?.role === "admin") && (
-              <Chip 
-                label="Режим предпросмотра" 
-                size="small" 
-                color="secondary" 
-                sx={{ 
-                  fontWeight: 800, 
-                  fontSize: "0.75rem", 
-                  bgcolor: "#f1f5f9", 
-                  color: "#0040b0", 
-                  border: "1px solid #0040b0" 
+              <Chip
+                label="Режим предпросмотра"
+                size="small"
+                color="secondary"
+                sx={{
+                  fontWeight: 800,
+                  fontSize: "0.75rem",
+                  bgcolor: "#f1f5f9",
+                  color: "#0040b0",
+                  border: "1px solid #0040b0"
                 }}
               />
             )}
@@ -1215,13 +1207,13 @@ export const ExamTakePage: React.FC = () => {
         </Box>
 
         <Box display="flex" alignItems="center" gap={2}>
-          <ExamTimer 
-            durationMinutes={exam.duration_minutes} 
-            startedAt={attempt.started_at} 
-            onTimeout={() => handleSubmitting(true)} 
+          <ExamTimer
+            durationMinutes={exam.duration_minutes}
+            startedAt={attempt.started_at}
+            onTimeout={() => handleSubmitting(true)}
           />
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => setSubmitDialogOpen(true)}
             sx={{ fontWeight: 700, borderRadius: "6px", bgcolor: "#0040b0" }}
           >
@@ -1230,71 +1222,71 @@ export const ExamTakePage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Main Work Area */}
+      {}
       <Box flexGrow={1} position="relative" display="flex" overflow="hidden">
         {activeQuestion.slide_id ? (
-          // Split screen
+
           <Grid container sx={{ height: "100%" }}>
             <Grid item xs={12} md={7} sx={{ height: "100%" }}>
               {activeQuestion.question_type === "point_on_image" ? (
-                <SlideViewer 
-                  slideId={activeQuestion.slide_id} 
+                <SlideViewer
+                  slideId={activeQuestion.slide_id}
                   highlightRegion={undefined}
                   isTeacher={false}
                   onImageClick={(point) => handleImageClickChange(activeQuestion.id, point)}
                   selectedPoint={answers[activeQuestion.id]?.annotation_data || null}
                 />
               ) : (
-                <SlideViewer 
-                  slideId={activeQuestion.slide_id} 
+                <SlideViewer
+                  slideId={activeQuestion.slide_id}
                   highlightRegion={activeQuestion.region_of_interest}
                   isTeacher={false}
                 />
               )}
             </Grid>
-            <Grid 
-              item 
-              xs={12} 
-              md={5} 
-              sx={{ 
-                height: "100%", 
-                overflowY: "auto", 
+            <Grid
+              item
+              xs={12}
+              md={5}
+              sx={{
+                height: "100%",
+                overflowY: "auto",
                 borderLeft: "1px solid #e2e8f0",
                 bgcolor: "#f8fafc",
-                p: 3 
+                p: 3
               }}
             >
               {renderQuestionPanel(
-                activeQuestion, 
-                answers[activeQuestion.id], 
-                handleSingleChoiceChange, 
-                handleMultipleChoiceChange, 
-                handleShortAnswerChange, 
+                activeQuestion,
+                answers[activeQuestion.id],
+                handleSingleChoiceChange,
+                handleMultipleChoiceChange,
+                handleShortAnswerChange,
                 handleEssayChange,
                 handleFlagToggle
               )}
             </Grid>
           </Grid>
         ) : (
-          // Fullscreen
-          <Box 
-            sx={{ 
-              flexGrow: 1, 
-              display: "flex", 
-              justifyContent: "center", 
-              alignItems: "center", 
-              p: 3, 
+
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              p: 3,
               overflowY: "auto",
               bgcolor: "#f8fafc"
             }}
           >
             <Box sx={{ maxWidth: 650, width: "100%" }}>
               {renderQuestionPanel(
-                activeQuestion, 
-                answers[activeQuestion.id], 
-                handleSingleChoiceChange, 
-                handleMultipleChoiceChange, 
-                handleShortAnswerChange, 
+                activeQuestion,
+                answers[activeQuestion.id],
+                handleSingleChoiceChange,
+                handleMultipleChoiceChange,
+                handleShortAnswerChange,
                 handleEssayChange,
                 handleFlagToggle
               )}
@@ -1303,12 +1295,12 @@ export const ExamTakePage: React.FC = () => {
         )}
       </Box>
 
-      {/* Navigation Footer */}
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: 2, 
-          borderTop: "1px solid #e2e8f0", 
+      {}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          borderTop: "1px solid #e2e8f0",
           bgcolor: "#ffffff",
           display: "flex",
           justifyContent: "space-between",
@@ -1316,8 +1308,8 @@ export const ExamTakePage: React.FC = () => {
           borderRadius: 0,
         }}
       >
-        <Button 
-          variant="outlined" 
+        <Button
+          variant="outlined"
           startIcon={<ArrowBackIcon />}
           onClick={() => setCurrentIdx(prev => Math.max(0, prev - 1))}
           disabled={currentIdx === 0}
@@ -1325,8 +1317,8 @@ export const ExamTakePage: React.FC = () => {
         >
           Назад
         </Button>
-        
-        {/* Question Quick Access Dots */}
+
+        {}
         <Box display="flex" gap={1} sx={{ display: { xs: "none", sm: "flex" } }}>
           {exam.questions.map((q, idx) => {
             const hasAns = !!answers[q.id];
@@ -1336,9 +1328,9 @@ export const ExamTakePage: React.FC = () => {
                 key={q.id}
                 onClick={() => setCurrentIdx(idx)}
                 size="small"
-                sx={{ 
-                  width: 32, 
-                  height: 32, 
+                sx={{
+                  width: 32,
+                  height: 32,
                   fontSize: "0.8rem",
                   fontWeight: 700,
                   bgcolor: isCurrent ? "#0040b0" : hasAns ? "#f0fdf4" : "#f1f5f9",
@@ -1355,8 +1347,8 @@ export const ExamTakePage: React.FC = () => {
           })}
         </Box>
 
-        <Button 
-          variant="outlined" 
+        <Button
+          variant="outlined"
           endIcon={<ArrowForwardIcon />}
           onClick={() => setCurrentIdx(prev => Math.min(exam.questions.length - 1, prev + 1))}
           disabled={currentIdx === exam.questions.length - 1}
@@ -1366,15 +1358,15 @@ export const ExamTakePage: React.FC = () => {
         </Button>
       </Paper>
 
-      {/* Manual Submit Confirmation Dialog */}
-      <Dialog 
-        open={submitDialogOpen} 
+      {}
+      <Dialog
+        open={submitDialogOpen}
         onClose={() => setSubmitDialogOpen(false)}
       >
         <DialogTitle sx={{ fontWeight: 800 }}>Завершить экзамен?</DialogTitle>
         <DialogContent>
           <DialogContentText color="text.secondary">
-            Вы уверены, что хотите завершить попытку прохождения экзамена? 
+            Вы уверены, что хотите завершить попытку прохождения экзамена?
             Вы ответили на {answeredCount} из {exam.questions.length} вопросов.
           </DialogContentText>
         </DialogContent>
@@ -1382,9 +1374,9 @@ export const ExamTakePage: React.FC = () => {
           <Button onClick={() => setSubmitDialogOpen(false)} color="inherit" sx={{ fontWeight: 600 }}>
             Отмена
           </Button>
-          <Button 
-            onClick={() => handleSubmitting(false)} 
-            variant="contained" 
+          <Button
+            onClick={() => handleSubmitting(false)}
+            variant="contained"
             sx={{ fontWeight: 700, borderRadius: "6px", bgcolor: "#0040b0" }}
             autoFocus
           >
@@ -1393,7 +1385,7 @@ export const ExamTakePage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Loading overlay for submissions */}
+      {}
       <Dialog open={submitting}>
         <Box display="flex" flexDirection="column" alignItems="center" p={4} bgcolor="#ffffff">
           <CircularProgress />
@@ -1403,9 +1395,9 @@ export const ExamTakePage: React.FC = () => {
         </Box>
       </Dialog>
 
-      {/* Hotspot Result Review Dialog */}
-      <Dialog 
-        open={reviewDialogOpen} 
+      {}
+      <Dialog
+        open={reviewDialogOpen}
         onClose={() => setReviewDialogOpen(false)}
         maxWidth="md"
         fullWidth
@@ -1422,7 +1414,7 @@ export const ExamTakePage: React.FC = () => {
         </DialogTitle>
         <DialogContent sx={{ p: 0, height: "100%", overflow: "hidden" }}>
           {reviewQuestion?.slide_id && (
-            <SlideViewer 
+            <SlideViewer
               slideId={reviewQuestion.slide_id}
               highlightRegion={reviewQuestion.region_of_interest}
               selectedPoint={reviewAnswer?.annotation_data}
@@ -1440,7 +1432,6 @@ export const ExamTakePage: React.FC = () => {
   );
 };
 
-// Render Helper for Question Inputs
 const renderQuestionPanel = (
   q: Question,
   ans: AnswerState | undefined,
@@ -1458,11 +1449,11 @@ const renderQuestionPanel = (
             <Typography variant="h6" fontWeight={700} sx={{ color: "#0f172a", fontSize: "1.05rem" }}>
               {q.order_index}. {q.question_text}
             </Typography>
-            <IconButton 
-              size="small" 
+            <IconButton
+              size="small"
               onClick={() => onFlagToggle(q.id)}
               title={q.is_flagged ? "Сообщить об ошибке в вопросе (Отмечено)" : "Сообщить об ошибке в вопросе"}
-              sx={{ 
+              sx={{
                 color: q.is_flagged ? "#ef4444" : "#94a3b8",
                 transition: "color 0.2s",
                 "&:hover": { color: "#ef4444" }
@@ -1471,12 +1462,12 @@ const renderQuestionPanel = (
               {q.is_flagged ? <FlagIcon sx={{ fontSize: 20 }} /> : <OutlinedFlagIcon sx={{ fontSize: 20 }} />}
             </IconButton>
           </Box>
-          <Box 
-            sx={{ 
-              px: 1.5, 
-              py: 0.5, 
-              bgcolor: "rgba(0,64,176,0.06)", 
-              border: "1px solid rgba(0,64,176,0.12)", 
+          <Box
+            sx={{
+              px: 1.5,
+              py: 0.5,
+              bgcolor: "rgba(0,64,176,0.06)",
+              border: "1px solid rgba(0,64,176,0.12)",
               borderRadius: "6px",
               ml: 2
             }}
@@ -1489,19 +1480,19 @@ const renderQuestionPanel = (
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Question Inputs */}
+        {}
         {q.question_type === "single_choice" && (
           <FormControl component="fieldset">
             <FormLabel component="legend" sx={{ display: "none" }} />
-            <RadioGroup 
+            <RadioGroup
               value={ans?.selected_option_id || ""}
               onChange={(e) => onSingleChange(q.id, e.target.value)}
             >
               {q.options.map(opt => (
-                <FormControlLabel 
-                  key={opt.id} 
-                  value={opt.id} 
-                  control={<Radio />} 
+                <FormControlLabel
+                  key={opt.id}
+                  value={opt.id}
+                  control={<Radio />}
                   label={opt.option_text}
                   sx={{ py: 0.4 }}
                 />
@@ -1513,15 +1504,15 @@ const renderQuestionPanel = (
         {q.question_type === "true_false" && (
           <FormControl component="fieldset">
             <FormLabel component="legend" sx={{ display: "none" }} />
-            <RadioGroup 
+            <RadioGroup
               value={ans?.selected_option_id || ""}
               onChange={(e) => onSingleChange(q.id, e.target.value)}
             >
               {q.options.map(opt => (
-                <FormControlLabel 
-                  key={opt.id} 
-                  value={opt.id} 
-                  control={<Radio />} 
+                <FormControlLabel
+                  key={opt.id}
+                  value={opt.id}
+                  control={<Radio />}
                   label={opt.option_text}
                   sx={{ py: 0.4 }}
                 />
@@ -1540,7 +1531,7 @@ const renderQuestionPanel = (
                   <FormControlLabel
                     key={opt.id}
                     control={
-                      <Checkbox 
+                      <Checkbox
                         checked={isChecked}
                         onChange={(e) => onMultiChange(q.id, opt.id, e.target.checked)}
                       />
@@ -1583,8 +1574,8 @@ const renderQuestionPanel = (
         {q.question_type === "point_on_image" && (
           <Box sx={{ mt: 1, p: 2, bgcolor: "rgba(0,64,176,0.03)", border: "1px dashed rgba(0,64,176,0.15)", borderRadius: "8px", textAlign: "center" }}>
             <Typography variant="body2" color="#0040b0" fontWeight={700}>
-              {ans?.annotation_data?.x 
-                ? "✓ Область указана на изображении" 
+              {ans?.annotation_data?.x
+                ? "✓ Область указана на изображении"
                 : "Нажмите на нужную область на препарате слева"}
             </Typography>
             {ans?.annotation_data?.x && (

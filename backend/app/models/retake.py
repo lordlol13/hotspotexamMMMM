@@ -17,13 +17,12 @@ class ExamRetake(Base):
     is_used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     exam: Mapped["Exam"] = relationship("Exam", back_populates="retakes")
     student: Mapped["Student"] = relationship("Student", back_populates="retakes")
     granter: Mapped[Optional["User"]] = relationship("User")

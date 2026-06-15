@@ -15,18 +15,17 @@ class Region(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     region_type: Mapped[RegionType] = mapped_column(SQLEnum(RegionType), nullable=False)
-    geometry: Mapped[dict] = mapped_column(JSONB, nullable=False)  # Stores coordinates, radius, SVG path, etc. in %
+    geometry: Mapped[dict] = mapped_column(JSONB, nullable=False)
     content_type: Mapped[Optional[RegionContentType]] = mapped_column(SQLEnum(RegionContentType), nullable=True)
-    content_data: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)  # Holds questions, URLs, paths, etc.
+    content_data: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     slide: Mapped["Slide"] = relationship("Slide", back_populates="regions")
     creator: Mapped[Optional["User"]] = relationship("User")

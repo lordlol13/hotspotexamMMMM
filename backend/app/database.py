@@ -2,8 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.config import settings
 
-# For PostgreSQL, create the engine.
-# pool_pre_ping=True checks connections on checkouts, preventing connection issues on Railway / AWS
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,

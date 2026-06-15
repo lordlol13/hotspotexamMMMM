@@ -2,12 +2,10 @@ import os
 import math
 from typing import Optional
 from PIL import Image
-# Disable Pillow's image size restriction (DecompressionBombError) for large slide imports
+
 Image.MAX_IMAGE_PIXELS = None
 import logging
 
-# Check if OpenSlide is available. On some platforms it might be missing
-# during setup or testing, so we handle it gracefully with a fallback.
 try:
     import openslide
     from openslide.deepzoom import DeepZoomGenerator
@@ -28,14 +26,12 @@ class PillowDeepZoomGenerator:
         self.image = image
         self.tile_size = tile_size
         self.overlap = overlap
-        
+
         self.width, self.height = image.size
         max_dim = max(self.width, self.height)
-        
-        # Calculate level count
+
         self.level_count = int(math.ceil(math.log2(max_dim))) + 1
-        
-        # Calculate dimensions at each level
+
         self.level_dimensions = []
         for level in range(self.level_count):
             scale = 2 ** (level - (self.level_count - 1))
@@ -53,39 +49,35 @@ class PillowDeepZoomGenerator:
         col, row = address
         w, h = self.level_dimensions[level]
         cols, rows = self.get_tile_count(level)
-        
-        # Calculate crop coordinates at this level
+
         x = col * self.tile_size - (self.overlap if col > 0 else 0)
         y = row * self.tile_size - (self.overlap if row > 0 else 0)
-        
+
         tile_w = self.tile_size + (self.overlap if col > 0 else 0) + (self.overlap if col < cols - 1 else 0)
         tile_h = self.tile_size + (self.overlap if row > 0 else 0) + (self.overlap if row < rows - 1 else 0)
-        
+
         tile_w = min(tile_w, w - x)
         tile_h = min(tile_h, h - y)
-        
-        # Scale coordinates to original resolution for high-quality crop
+
         scale = 2 ** (level - (self.level_count - 1))
         orig_x = int(round(x / scale))
         orig_y = int(round(y / scale))
         orig_w = int(round(tile_w / scale))
         orig_h = int(round(tile_h / scale))
-        
+
         box = (
-            orig_x, 
-            orig_y, 
-            min(self.width, orig_x + orig_w), 
+            orig_x,
+            orig_y,
+            min(self.width, orig_x + orig_w),
             min(self.height, orig_y + orig_h)
         )
-        
+
         cropped = self.image.crop(box)
-        
-        # Resize to expected tile size if scaled
+
         if cropped.size != (tile_w, tile_h) and tile_w > 0 and tile_h > 0:
             cropped = cropped.resize((tile_w, tile_h), Image.Resampling.LANCZOS)
-            
-        return cropped
 
+        return cropped
 
 class UnifiedSlideProcessor:
     """
@@ -96,18 +88,18 @@ class UnifiedSlideProcessor:
         self.file_path = file_path
         self.tile_size = tile_size
         self.overlap = overlap
-        
+
         self.ext = os.path.splitext(file_path)[1].lower()
         self.is_openslide_format = self.ext in [".svs", ".tiff", ".tif", ".ndpi", ".vms", ".bif", ".mrxs"]
-        
+
         self.slide = None
         self.pil_image = None
         self.dz = None
-        
+
         self._init_reader()
 
     def _init_reader(self):
-        # If it's a slide format and OpenSlide is available, use it
+
         if self.is_openslide_format and OPENSLIDE_AVAILABLE:
             try:
                 self.slide = openslide.OpenSlide(self.file_path)
@@ -115,10 +107,9 @@ class UnifiedSlideProcessor:
                 return
             except Exception as e:
                 logger.warning(f"OpenSlide failed to load {self.file_path}, falling back to PIL: {e}")
-        
-        # Fallback to Pillow
+
         self.pil_image = Image.open(self.file_path)
-        # Ensure image is in RGB mode for JPEG/PNG tiles compatibility
+
         if self.pil_image.mode not in ["RGB", "RGBA"]:
             self.pil_image = self.pil_image.convert("RGB")
         self.dz = PillowDeepZoomGenerator(self.pil_image, tile_size=self.tile_size, overlap=self.overlap)
@@ -139,7 +130,7 @@ class UnifiedSlideProcessor:
     def mpp(self) -> Optional[float]:
         """Get microns per pixel (MPP) if available."""
         if self.slide:
-            # OpenSlide properties hold metadata
+
             mpp_x = self.slide.properties.get(openslide.PROPERTY_NAME_MPP_X)
             if mpp_x:
                 return float(mpp_x)
@@ -176,14 +167,12 @@ class UnifiedSlideProcessor:
         For large SVS, fetches from low resolution levels to avoid RAM overhead.
         """
         if self.slide:
-            # SVS: Use OpenSlide thumbnail generation
-            # Calculate height to preserve aspect ratio
+
             aspect = self.width / self.height
             h = int(max_width / aspect)
             return self.slide.get_thumbnail((max_width, h))
         else:
-            # Pillow: standard resize
-            # Create a copy and resize
+
             thumb = self.pil_image.copy()
             thumb.thumbnail((max_width, max_width), Image.Resampling.LANCZOS)
             return thumb

@@ -87,15 +87,14 @@ def get_exam(
     exam = ExamService.get_exam(db, exam_id)
     if current_user.role == UserRole.STUDENT and not ExamService.can_student_access_exam(db, exam_id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this exam")
-    
-    # We construct a response object to strip sensitive flags if user is a student
+
     response_data = ExamResponse.model_validate(exam)
-    
+
     if current_user.role == UserRole.STUDENT:
         for q in response_data.questions:
             for opt in q.options:
-                opt.is_correct = False  # Mask correct answers
-                
+                opt.is_correct = False
+
     return response_data
 
 @router.post("/attempts/{attempt_id}/submit", response_model=ExamAttemptResponse)
@@ -109,14 +108,14 @@ def submit_exam_attempt(
     Submit exam answers, execute auto-grading routines, and return graded session details.
     Role: Student.
     """
-    # Verify the attempt belongs to this student
+
     from app.models.attempt import ExamAttempt
     db_attempt = db.query(ExamAttempt).filter(ExamAttempt.id == attempt_id).first()
     if not db_attempt:
         raise HTTPException(status_code=404, detail="Attempt not found")
     if db_attempt.student_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to submit this attempt")
-        
+
     return ExamService.submit_attempt(db, attempt_id, schema)
 
 @router.post("/retakes", response_model=ExamRetakeResponse, status_code=status.HTTP_201_CREATED)
@@ -174,7 +173,6 @@ def clear_exam_questions(
     ExamService.clear_questions(db, exam_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
 @router.post("/questions/{question_id}/flag", response_model=ExamQuestionResponse)
 def flag_exam_question(
     question_id: uuid.UUID,
@@ -189,7 +187,7 @@ def flag_exam_question(
     question = db.query(ExamQuestion).filter(ExamQuestion.id == question_id).first()
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
-    
+
     question.is_flagged = not question.is_flagged
     db.commit()
     db.refresh(question)

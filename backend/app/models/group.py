@@ -5,7 +5,6 @@ from sqlalchemy import String, DateTime, func, Column, Table, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
-# Many-to-Many association table between Groups and Courses
 course_groups = Table(
     "course_groups",
     Base.metadata,
@@ -13,7 +12,6 @@ course_groups = Table(
     Column("course_id", ForeignKey("courses.id", ondelete="CASCADE"), primary_key=True)
 )
 
-# Many-to-Many association table between Groups and Exams
 exam_groups = Table(
     "exam_groups",
     Base.metadata,
@@ -29,13 +27,12 @@ class Group(Base):
     description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     students: Mapped[List["Student"]] = relationship("Student", back_populates="group")
     courses: Mapped[List["Course"]] = relationship(
         "Course",

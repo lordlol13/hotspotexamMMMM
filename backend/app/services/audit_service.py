@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from app.models.audit_log import AuditLog
 from app.models.enums import AuditAction
 
-
 class AuditService:
     @staticmethod
     def record(

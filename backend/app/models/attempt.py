@@ -20,25 +20,23 @@ class ExamAttempt(Base):
     is_graded: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     exam: Mapped["Exam"] = relationship("Exam", back_populates="attempts")
     student: Mapped["Student"] = relationship("Student", back_populates="exam_attempts")
     answers: Mapped[List["AttemptAnswer"]] = relationship(
-        "AttemptAnswer", 
-        back_populates="attempt", 
+        "AttemptAnswer",
+        back_populates="attempt",
         cascade="all, delete-orphan"
     )
 
     __table_args__ = (
         UniqueConstraint("exam_id", "student_id", "attempt_number", name="uq_exam_student_attempt"),
     )
-
 
 class AttemptAnswer(Base):
     __tablename__ = "attempt_answers"
@@ -48,7 +46,7 @@ class AttemptAnswer(Base):
     question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("exam_questions.id", ondelete="RESTRICT"), nullable=False)
     selected_option_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("question_options.id", ondelete="SET NULL"), nullable=True)
     text_answer: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
-    annotation_data: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)  # Stores student annotations/coords
+    annotation_data: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
     points_awarded: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     @property
@@ -59,13 +57,12 @@ class AttemptAnswer(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False
     )
 
-    # Relationships
     attempt: Mapped["ExamAttempt"] = relationship("ExamAttempt", back_populates="answers")
     question: Mapped["ExamQuestion"] = relationship("ExamQuestion", back_populates="answers")
     selected_option: Mapped[Optional["QuestionOption"]] = relationship("QuestionOption", back_populates="answers_selected")

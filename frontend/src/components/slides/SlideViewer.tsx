@@ -13,7 +13,6 @@ const logger = {
   info: (...args: any[]) => console.info("[SlideViewer]", ...args),
 };
 
-/** Get the current auth token from localStorage. */
 function getAuthToken(): string | null {
   return localStorage.getItem("access_token");
 }
@@ -29,7 +28,7 @@ interface SlideViewerProps {
   selectedPoint?: { x: number; y: number } | null;
 }
 
-export const SlideViewer: React.FC<SlideViewerProps> = ({ 
+export const SlideViewer: React.FC<SlideViewerProps> = ({
   slideId,
   highlightRegion,
   isTeacher = false,
@@ -43,12 +42,11 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
   const osdViewerRef = useRef<OpenSeadragon.Viewer | null>(null);
   const [viewerInstance, setViewerInstance] = useState<OpenSeadragon.Viewer | null>(null);
 
-  // 1. Fetch slide metadata with retry (slide may still be processing)
   useEffect(() => {
     let active = true;
     let retryCount = 0;
     const maxRetries = 10;
-    const retryDelay = 2000; // 2s between retries
+    const retryDelay = 2000;
     let timerId: ReturnType<typeof setTimeout> | null = null;
 
     const fetchMetadata = () => {
@@ -61,7 +59,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           if (!active) return;
           const data = res.data;
 
-          // If the slide isn't processed yet, the width/height may be null/0
           if (!data.is_processed && retryCount < maxRetries) {
             retryCount++;
             logger.info(`Slide still processing, retrying (${retryCount}/${maxRetries})…`);
@@ -92,7 +89,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
     };
   }, [slideId]);
 
-  // 2. Initialize OpenSeadragon when metadata is loaded
   useEffect(() => {
     if (loading || error || !metadata || !viewerRef.current) return;
 
@@ -138,7 +134,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         clickToZoom: !onImageClick
       },
 
-      // ─── Auth fix: load tiles via AJAX with Authorization header ───
       loadTilesWithAjax: true,
       ajaxHeaders: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -146,7 +141,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
     osdViewerRef.current = viewer;
     setViewerInstance(viewer);
 
-    // Log tile load failures for debugging
     viewer.addHandler("tile-load-failed", (event: any) => {
       logger.error("Tile load failed:", event.message, event.tile?.url);
     });
@@ -160,7 +154,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
     };
   }, [loading, error, metadata, slideId]);
 
-  // 3. Handle canvas click for Point on Image questions
   useEffect(() => {
     if (!viewerInstance || !onImageClick || !metadata) return;
 
@@ -180,7 +173,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
     };
   }, [viewerInstance, onImageClick, metadata]);
 
-  // 4. Disable click-to-zoom dynamically when onImageClick changes
   useEffect(() => {
     if (!viewerInstance) return;
     const v = viewerInstance as any;
@@ -240,13 +232,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
   return (
     <Box position="relative" width="100%" height="100%" bgcolor="#ffffff" overflow="hidden">
-      {/* OpenSeadragon Viewport container */}
-      <div 
-        ref={viewerRef} 
-        style={{ width: "100%", height: "100%", backgroundColor: "#f8fafc" }} 
+      {}
+      <div
+        ref={viewerRef}
+        style={{ width: "100%", height: "100%", backgroundColor: "#f8fafc" }}
       />
 
-      {/* SVG Drawing & Hotspot Overlay */}
+      {}
       {metadata && (
         <DrawingOverlay
           slideId={slideId}
@@ -259,13 +251,13 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         />
       )}
 
-      {/* Floating Header Info */}
+      {}
       <Box sx={{ position: "absolute", top: 16, left: 16, zIndex: 100, pointerEvents: "none" }}>
-        <Paper 
+        <Paper
           elevation={0}
-          sx={{ 
-            p: 1.8, 
-            bgcolor: "rgba(255, 255, 255, 0.95)", 
+          sx={{
+            p: 1.8,
+            bgcolor: "rgba(255, 255, 255, 0.95)",
             backdropFilter: "blur(8px)",
             border: "1px solid #e2e8f0",
             borderRadius: "8px",
@@ -281,15 +273,15 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         </Paper>
       </Box>
 
-      {/* Floating Navigation Controls */}
+      {}
       <Box position="absolute" bottom={16} left="50%" sx={{ transform: "translateX(-50%)", zIndex: 100 }}>
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            p: 0.6, 
-            display: "flex", 
-            gap: 0.6, 
-            bgcolor: "rgba(255, 255, 255, 0.95)", 
+        <Paper
+          elevation={0}
+          sx={{
+            p: 0.6,
+            display: "flex",
+            gap: 0.6,
+            bgcolor: "rgba(255, 255, 255, 0.95)",
             backdropFilter: "blur(8px)",
             borderRadius: "30px",
             border: "1px solid #e2e8f0",

@@ -19,15 +19,14 @@ class AuthService:
     @staticmethod
     def register_student(db: Session, schema: StudentRegister) -> User:
         """
-        Register a new student. 
+        Register a new student.
         Creates a User identity record and a linked Student profile.
         If a group_name is provided, links or creates the group.
         """
-        # Check if email already registered
+
         if db.query(User).filter(User.email == schema.email).first():
             raise BadRequestException("Email already registered")
 
-        # Generate a unique username from email
         username = schema.email.split("@")[0]
         base_username = username
         counter = 1
@@ -35,27 +34,23 @@ class AuthService:
             username = f"{base_username}{counter}"
             counter += 1
 
-        # Check if student_code already exists
         if db.query(Student).filter(Student.student_code == schema.student_code).first():
             raise BadRequestException("Student ID already exists in the system")
 
-        # Handle Group lookup or creation
         group_id = None
         if schema.group_name and schema.group_name != "Без группы":
             group = db.query(Group).filter(Group.name == schema.group_name).first()
             if not group:
                 group = Group(
-                    name=schema.group_name, 
+                    name=schema.group_name,
                     description=f"Auto-created group during registration for student {schema.first_name} {schema.last_name}"
                 )
                 db.add(group)
-                db.flush()  # Populates group.id
+                db.flush()
             group_id = group.id
 
-        # Generate verification token
         verification_token = str(uuid.uuid4())
 
-        # Create core User record
         user = User(
             email=schema.email,
             username=username,
@@ -69,7 +64,6 @@ class AuthService:
         db.add(user)
         db.flush()
 
-        # Create linked Student Profile
         student = Student(
             id=user.id,
             student_code=schema.student_code,
@@ -82,7 +76,7 @@ class AuthService:
         db.refresh(user)
 
         if settings.REQUIRE_EMAIL_VERIFICATION:
-            # Email Dispatch
+
             verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
             subject = "Подтверждение регистрации"
             body = f"""
@@ -106,7 +100,6 @@ class AuthService:
         if db.query(User).filter(User.username == schema.username).first():
             raise BadRequestException("Username already taken")
 
-        # Generate verification token
         verification_token = str(uuid.uuid4())
 
         user = User(
@@ -132,7 +125,7 @@ class AuthService:
         db.refresh(user)
 
         if settings.REQUIRE_EMAIL_VERIFICATION:
-            # Email Dispatch
+
             verify_link = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
             subject = "Подтверждение регистрации преподавателя"
             body = f"""
@@ -150,7 +143,7 @@ class AuthService:
         Authenticate a user by username or email.
         """
         user = db.query(User).filter(
-            (func.lower(User.username) == func.lower(username_or_email)) | 
+            (func.lower(User.username) == func.lower(username_or_email)) |
             (func.lower(User.email) == func.lower(username_or_email))
         ).first()
 
@@ -195,7 +188,6 @@ class AuthService:
         user.reset_token = reset_token
         db.commit()
 
-        # Email Dispatch
         reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
         subject = "Сброс пароля"
         body = f"""
@@ -227,18 +219,18 @@ class AuthService:
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise NotFoundException("User not found")
-            
+
         if schema.email and schema.email != user.email:
-            # Check if email already taken
+
             if db.query(User).filter(User.email == schema.email).first():
                 raise BadRequestException("Email already in use")
             user.email = schema.email
-            
+
         if schema.first_name:
             user.first_name = schema.first_name
         if schema.last_name:
             user.last_name = schema.last_name
-            
+
         if schema.phone is not None:
             user.phone = schema.phone
         if schema.address is not None:
@@ -247,8 +239,7 @@ class AuthService:
             user.is_private = schema.is_private
         if schema.hide_grades is not None:
             user.hide_grades = schema.hide_grades
-            
-        # Update linked profile if exists
+
         if user.role == UserRole.STUDENT and user.student_profile:
             if schema.faculty is not None:
                 user.student_profile.faculty = schema.faculty
@@ -259,7 +250,7 @@ class AuthService:
                 user.teacher_profile.department = schema.department
             if schema.title is not None:
                 user.teacher_profile.title = schema.title
-                
+
         db.commit()
         db.refresh(user)
         return user
@@ -269,10 +260,10 @@ class AuthService:
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             raise NotFoundException("User not found")
-            
+
         if not verify_password(schema.old_password, user.hashed_password):
             raise BadRequestException("Incorrect current password")
-            
+
         user.hashed_password = get_password_hash(schema.new_password)
         db.commit()
         return True

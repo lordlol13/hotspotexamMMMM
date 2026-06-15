@@ -18,8 +18,8 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 interface DateRangePickerProps {
-  startTime: string; // Format: YYYY-MM-DDTHH:MM or empty
-  endTime: string;   // Format: YYYY-MM-DDTHH:MM or empty
+  startTime: string;
+  endTime: string;
   onChange: (start: string, end: string) => void;
 }
 
@@ -35,17 +35,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   onChange
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  
-  // Date and Time parts in local strings (YYYY-MM-DD and HH:MM)
+
   const [startDateStr, setStartDateStr] = useState<string | null>(null);
   const [endDateStr, setEndDateStr] = useState<string | null>(null);
   const [startTimeStr, setStartTimeStr] = useState<string>("09:00");
   const [endTimeStr, setEndTimeStr] = useState<string>("18:00");
 
-  // Display month state for the calendar view
   const [displayMonth, setDisplayMonth] = useState<Date>(() => new Date());
 
-  // Parse incoming props
   useEffect(() => {
     if (startTime) {
       const parts = startTime.split("T");
@@ -75,7 +72,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   const isOpen = Boolean(anchorEl);
 
-  // Month navigation
   const handlePrevMonth = () => {
     setDisplayMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
@@ -84,40 +80,34 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     setDisplayMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
-  // Generate calendar days (Mon-Sun layout)
   const calendarDays = useMemo(() => {
     const year = displayMonth.getFullYear();
     const month = displayMonth.getMonth();
     const firstDayOfMonth = new Date(year, month, 1);
-    
-    // Get starting weekday index (Monday=0, Sunday=6)
+
     let startDayOfWeek = firstDayOfMonth.getDay();
     startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
     const days: Date[] = [];
-    
-    // Previous month filler days
+
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startDayOfWeek - 1; i >= 0; i--) {
       days.push(new Date(year, month - 1, prevMonthLastDay - i));
     }
-    
-    // Current month days
+
     const totalDays = new Date(year, month + 1, 0).getDate();
     for (let i = 1; i <= totalDays; i++) {
       days.push(new Date(year, month, i));
     }
-    
-    // Next month filler days to complete a 6-row grid (42 days)
+
     const remaining = 42 - days.length;
     for (let i = 1; i <= remaining; i++) {
       days.push(new Date(year, month + 1, i));
     }
-    
+
     return days;
   }, [displayMonth]);
 
-  // Format Helper to convert local Date object to YYYY-MM-DD string
   const toLocalDateString = (d: Date): string => {
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, "0");
@@ -129,13 +119,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     const dayStr = toLocalDateString(day);
 
     if (!startDateStr || (startDateStr && endDateStr)) {
-      // Start a new range selection
+
       setStartDateStr(dayStr);
       setEndDateStr(null);
     } else {
-      // Complete range selection
+
       if (dayStr < startDateStr) {
-        // If clicked day is before start date, set it as start date
+
         setStartDateStr(dayStr);
       } else {
         setEndDateStr(dayStr);
@@ -143,7 +133,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     }
   };
 
-  // Check state of a calendar day
   const getDayStatus = (day: Date) => {
     const dayStr = toLocalDateString(day);
     const isStart = startDateStr === dayStr;
@@ -154,11 +143,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     return { isStart, isEnd, isInRange, isGreyed };
   };
 
-  // Preset Handlers
   const applyPreset = (days: number) => {
     const today = new Date();
     const startStr = toLocalDateString(today);
-    
+
     const futureDate = new Date();
     futureDate.setDate(today.getDate() + days);
     const endStr = toLocalDateString(futureDate);
@@ -193,10 +181,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     handleClose();
   };
 
-  // Helper to format display text in the TextField
   const getDisplayText = () => {
     if (!startDateStr) return "Экзамен доступен всегда (без ограничений)";
-    
+
     const formatDate = (str: string) => {
       const parts = str.split("-");
       return `${parts[2]}.${parts[1]}.${parts[0]}`;
@@ -260,7 +247,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         }}
       >
         <Stack direction={{ xs: "column", sm: "row" }} divider={<Divider orientation="vertical" flexItem />}>
-          {/* Presets and Times Panel */}
+          {}
           <Box p={2.5} width={220} display="flex" flexDirection="column" gap={2.5} bgcolor="#f8fafc">
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
@@ -280,7 +267,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               <Typography variant="caption" sx={{ fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Настройка времени
               </Typography>
-              
+
               <Box>
                 <Typography variant="caption" display="block" color="text.secondary" gutterBottom>
                   Начало (Время)
@@ -331,9 +318,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             </Box>
           </Box>
 
-          {/* Calendar Panel */}
+          {}
           <Box p={2.5} width={340}>
-            {/* Header Navigation */}
+            {}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <IconButton onClick={handlePrevMonth} size="small" sx={{ border: "1px solid #e2e8f0" }}>
                 <NavigateBeforeIcon />
@@ -346,7 +333,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               </IconButton>
             </Box>
 
-            {/* Weekdays header */}
+            {}
             <Grid container spacing={0} mb={1}>
               {WEEKDAYS.map((wd, index) => (
                 <Grid item xs={1.71} key={wd} textAlign="center">
@@ -357,17 +344,17 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               ))}
             </Grid>
 
-            {/* Calendar Grid of days */}
+            {}
             <Grid container spacing={0}>
               {calendarDays.map((day, idx) => {
                 const { isStart, isEnd, isInRange, isGreyed } = getDayStatus(day);
-                
+
                 return (
-                  <Grid 
-                    item 
-                    xs={1.71} 
-                    key={idx} 
-                    sx={{ 
+                  <Grid
+                    item
+                    xs={1.71}
+                    key={idx}
+                    sx={{
                       position: "relative",
                       py: "4px",
                       display: "flex",
@@ -375,9 +362,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       alignItems: "center"
                     }}
                   >
-                    {/* Range connection background */}
+                    {}
                     {isInRange && (
-                      <Box 
+                      <Box
                         sx={{
                           position: "absolute",
                           left: 0,
@@ -389,10 +376,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         }}
                       />
                     )}
-                    
-                    {/* Start date background overlap connector */}
+
+                    {}
                     {isStart && endDateStr && (
-                      <Box 
+                      <Box
                         sx={{
                           position: "absolute",
                           left: "50%",
@@ -405,9 +392,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       />
                     )}
 
-                    {/* End date background overlap connector */}
+                    {}
                     {isEnd && startDateStr && (
-                      <Box 
+                      <Box
                         sx={{
                           position: "absolute",
                           left: 0,
@@ -420,7 +407,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       />
                     )}
 
-                    {/* Day button */}
+                    {}
                     <Button
                       onClick={() => handleDayClick(day)}
                       sx={{
@@ -432,13 +419,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         zIndex: 2,
                         textTransform: "none",
                         fontWeight: (isStart || isEnd) ? 800 : 500,
-                        color: (isStart || isEnd) 
-                          ? "#ffffff" 
-                          : isGreyed 
-                            ? "#cbd5e1" 
+                        color: (isStart || isEnd)
+                          ? "#ffffff"
+                          : isGreyed
+                            ? "#cbd5e1"
                             : "#0f172a",
-                        backgroundColor: (isStart || isEnd) 
-                          ? "#0040b0" 
+                        backgroundColor: (isStart || isEnd)
+                          ? "#0040b0"
                           : "transparent",
                         "&:hover": {
                           backgroundColor: (isStart || isEnd) ? "#003390" : "#f1f5f9"
@@ -452,23 +439,23 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               })}
             </Grid>
 
-            {/* Actions panel */}
+            {}
             <Box mt={3} pt={2} display="flex" justifyContent="space-between" borderTop="1px solid #e2e8f0">
-              <Button 
-                onClick={handleClear} 
-                color="error" 
-                size="small" 
+              <Button
+                onClick={handleClear}
+                color="error"
+                size="small"
                 sx={{ fontWeight: 700, textTransform: "none" }}
               >
                 Сбросить
               </Button>
-              <Button 
-                onClick={handleApply} 
-                variant="contained" 
-                size="small" 
-                sx={{ 
-                  bgcolor: "#0040b0", 
-                  fontWeight: 700, 
+              <Button
+                onClick={handleApply}
+                variant="contained"
+                size="small"
+                sx={{
+                  bgcolor: "#0040b0",
+                  fontWeight: 700,
                   textTransform: "none",
                   borderRadius: "8px",
                   px: 2,

@@ -14,7 +14,7 @@ def seed_db():
     db = SessionLocal()
     try:
         print("Cleaning up database (removing all experimental data)...")
-        # Delete in order of dependencies to avoid foreign key violations
+
         db.query(ExamAttempt).delete()
         db.query(CourseEnrollment).delete()
         db.query(Student).delete()
@@ -26,11 +26,10 @@ def seed_db():
         db.commit()
         print("Database cleared successfully.")
 
-        # Create one admin account
         admin_email = "admin@hotspot.com"
-        admin_password = "admin12345"  # 10 characters long to satisfy validation
+        admin_password = "admin12345"
         print(f"Creating default admin account: {admin_email}...")
-        
+
         admin_user = User(
             email=admin_email,
             username="admin",
@@ -42,7 +41,7 @@ def seed_db():
             is_verified=True
         )
         db.add(admin_user)
-        db.flush() # Get user id
+        db.flush()
 
         profile = Teacher(
             id=admin_user.id,
@@ -51,7 +50,7 @@ def seed_db():
         )
         db.add(profile)
         db.commit()
-        
+
         print("==================================================")
         print("Database clean-up and seeding completed!")
         print(f"Admin Email: {admin_email}")

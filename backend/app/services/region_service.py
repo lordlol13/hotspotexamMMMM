@@ -45,11 +45,11 @@ class RegionService:
         Modify existing slide region parameters (coordinates, content, title).
         """
         region = RegionService.get_region(db, region_id)
-        
+
         update_data = schema.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(region, key, value)
-            
+
         db.commit()
         db.refresh(region)
         return region

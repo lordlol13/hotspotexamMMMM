@@ -8,7 +8,6 @@ from app.models.group import Group
 from app.models.user import Student
 from app.schemas.group import GroupCreate, GroupUpdate
 
-
 class GroupService:
 
     @staticmethod
@@ -97,7 +96,6 @@ class GroupService:
                 detail="Группа не найдена."
             )
 
-        # Отвязать студентов от группы
         db.query(Student).filter(Student.group_id == group_id).update(
             {Student.group_id: None}, synchronize_session="fetch"
         )

@@ -4,7 +4,7 @@ import TimerIcon from "@mui/icons-material/Timer";
 
 interface ExamTimerProps {
   durationMinutes: number;
-  startedAt: string; // ISO timestamp
+  startedAt: string;
   onTimeout: () => void;
 }
 
@@ -33,14 +33,13 @@ export const ExamTimer: React.FC<ExamTimerProps> = ({
     return () => clearInterval(interval);
   }, [durationMinutes, startedAt, onTimeout]);
 
-  // Format time (HH:MM:SS)
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
 
     const pad = (n: number) => n.toString().padStart(2, "0");
-    
+
     if (h > 0) {
       return `${pad(h)}:${pad(m)}:${pad(s)}`;
     }
@@ -75,15 +74,15 @@ export const ExamTimer: React.FC<ExamTimerProps> = ({
   const colors = getColors();
 
   return (
-    <Paper 
-      elevation={0} 
-      sx={{ 
-        p: 1.2, 
+    <Paper
+      elevation={0}
+      sx={{
+        p: 1.2,
         px: 2,
-        display: "flex", 
-        alignItems: "center", 
-        gap: 1.5, 
-        bgcolor: colors.bg, 
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        bgcolor: colors.bg,
         borderRadius: "10px",
         border: `1px solid ${colors.border}`,
         transition: "background-color 0.3s, border-color 0.3s"
@@ -91,17 +90,17 @@ export const ExamTimer: React.FC<ExamTimerProps> = ({
     >
       <TimerIcon sx={{ color: colors.text, fontSize: 20 }} />
       <Box>
-        <Typography 
-          variant="caption" 
-          color="#64748b" 
-          display="block" 
+        <Typography
+          variant="caption"
+          color="#64748b"
+          display="block"
           sx={{ lineHeight: 1, fontWeight: 700, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.5px", mb: 0.2 }}
         >
           Осталось времени
         </Typography>
-        <Typography 
-          variant="subtitle1" 
-          fontWeight={800} 
+        <Typography
+          variant="subtitle1"
+          fontWeight={800}
           fontFamily="monospace"
           sx={{ color: colors.text, lineHeight: 1, minWidth: 60, fontSize: "1rem" }}
         >

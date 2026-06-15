@@ -14,10 +14,8 @@ from app.models.attempt import ExamAttempt
 
 router = APIRouter()
 
-
 class UpdateStudentGroupRequest(BaseModel):
     group_id: Optional[str] = None
-
 
 @router.get("/", status_code=status.HTTP_200_OK)
 def list_students(
@@ -26,7 +24,6 @@ def list_students(
 ):
     """Получить список всех студентов с информацией о группе."""
     return StudentService.get_all_students(db, current_user=current_user)
-
 
 @router.put("/{student_id}/group", status_code=status.HTTP_200_OK)
 def update_student_group(
@@ -39,7 +36,6 @@ def update_student_group(
     group_uuid = uuid.UUID(data.group_id) if data.group_id else None
     return StudentService.update_student_group(db, student_id, group_uuid)
 
-
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user_profile(
     user_id: uuid.UUID,
@@ -50,14 +46,13 @@ def get_user_profile(
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден")
-        
-    # Calculate grades/performance metrics dynamically if student
+
     if user.role == UserRole.STUDENT and user.student_profile:
         attempts = db.query(ExamAttempt).filter(
             ExamAttempt.student_id == user.id,
             ExamAttempt.submitted_at.isnot(None)
         ).all()
-        
+
         total_score_pct = 0.0
         graded_count = 0
         completed_exam_ids = set()
@@ -67,10 +62,10 @@ def get_user_profile(
                 score_pct = (att.score / att.max_score) * 100
                 total_score_pct += score_pct
                 graded_count += 1
-                
+
         avg_score = round(total_score_pct / graded_count, 1) if graded_count > 0 else 0.0
         completed_count = len(completed_exam_ids)
-        
+
         if current_user.role == UserRole.STUDENT and user.hide_grades and user.id != current_user.id:
             user.student_profile.average_score = None
             user.student_profile.completed_exams = None
@@ -78,7 +73,6 @@ def get_user_profile(
             user.student_profile.average_score = avg_score
             user.student_profile.completed_exams = completed_count
 
-    # Студенты не могут видеть email, телефон и адрес приватных профилей других пользователей
     if current_user.role == UserRole.STUDENT and user.is_private and user.id != current_user.id:
         masked_user = User(
             id=user.id,
@@ -99,5 +93,5 @@ def get_user_profile(
             updated_at=user.updated_at
         )
         return masked_user
-        
+
     return user

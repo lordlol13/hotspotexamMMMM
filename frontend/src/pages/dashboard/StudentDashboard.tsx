@@ -12,9 +12,6 @@ import axios from "axios";
 
 import { useAuth } from "../../App";
 
-/* ------------------------------------------------------------------ */
-/*  Interfaces                                                       */
-/* ------------------------------------------------------------------ */
 interface ExamHistoryItem {
   attempt_id: string;
   exam_id: string;
@@ -42,9 +39,6 @@ interface StudentAnalytics {
   score_trends: ScoreTrendItem[];
 }
 
-/* ------------------------------------------------------------------ */
-/*  Custom Recharts tooltip                                           */
-/* ------------------------------------------------------------------ */
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
@@ -71,9 +65,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
 export const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -91,7 +82,7 @@ export const StudentDashboard: React.FC = () => {
         console.error(err);
         if (!silent) {
           setError("Could not retrieve live analytics. Rendering sandbox demo mode.");
-          // Fallback mockup data
+
           setData({
             average_score: 84.5,
             completion_rate: 66.7,
@@ -138,7 +129,7 @@ export const StudentDashboard: React.FC = () => {
     fetchAnalytics(false);
     const timer = setInterval(() => {
       fetchAnalytics(true);
-    }, 10000); // Poll every 10 seconds silently
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -195,7 +186,7 @@ export const StudentDashboard: React.FC = () => {
 
   return (
     <Box>
-      {/* ========== HEADER ========== */}
+      {}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 4, flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, color: "#0f172a" }}>
@@ -216,7 +207,7 @@ export const StudentDashboard: React.FC = () => {
         </Alert>
       )}
 
-      {/* ========== KPI CARDS ROW ========== */}
+      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {kpiCards.map((card) => (
           <Grid item xs={12} sm={4} key={card.label}>
@@ -249,7 +240,7 @@ export const StudentDashboard: React.FC = () => {
         ))}
       </Grid>
 
-      {/* ========== CHART + INFO PANEL ========== */}
+      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={7}>
           <Card sx={{ p: 2.5, height: "100%", boxSizing: "border-box" }}>
@@ -322,7 +313,7 @@ export const StudentDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* ========== EXAM HISTORY TABLE ========== */}
+      {}
       <Box>
         <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
           История экзаменов

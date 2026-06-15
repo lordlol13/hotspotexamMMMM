@@ -2,9 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from "axios";
 import { useAuth } from "../App";
 
-/* ───────────────────────────────────────────────── */
-/*  Shared Types                                      */
-/* ───────────────────────────────────────────────── */
 export interface GroupData {
   id: string;
   name: string;
@@ -47,9 +44,6 @@ export const useData = () => {
   return context;
 };
 
-/* ───────────────────────────────────────────────── */
-/*  UUID Utility Helpers                              */
-/* ───────────────────────────────────────────────── */
 const generateUUID = (): string => {
   return (
     (typeof crypto !== "undefined" && crypto.randomUUID?.()) ||
@@ -79,9 +73,6 @@ const getDeterministicStudentId = (email: string): string => {
   return mapping[email] || generateUUID();
 };
 
-/* ───────────────────────────────────────────────── */
-/*  Mock Data (fallback when API is unavailable)      */
-/* ───────────────────────────────────────────────── */
 const MOCK_GROUPS: GroupData[] = [
   {
     id: "7c317689-6156-4d5f-8c0b-993c7a3f235c",
@@ -116,9 +107,6 @@ const MOCK_STUDENTS: StudentData[] = [
   { id: "6fab2e60-85de-4579-874b-20c5c0b323fc", name: "Анна Волкова", email: "anna@edu.ru", group_name: "Группа Б", group_id: "9b8370cd-5566-4dae-852b-ee51bd07a8c1", average_score: 70.1, completed_exams: 2 },
 ];
 
-/* ───────────────────────────────────────────────── */
-/*  DataProvider                                      */
-/* ───────────────────────────────────────────────── */
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [groups, setGroups] = useState<GroupData[]>([]);
@@ -136,7 +124,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let groupStats: any[] = [];
       let studentRankings: any[] = [];
 
-      // 1. Fetch teacher analytics only if teacher/admin
       if (isTeacher) {
         try {
           const analyticsRes = await axios.get("/api/v1/analytics/teacher");
@@ -147,12 +134,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Fetch groups and students from CRUD/public endpoints
       let apiGroups: any[] = [];
       let apiStudents: any[] = [];
 
       try {
-        // Teachers/Admins call /api/v1/groups/, Students call /api/v1/groups/public
+
         const groupsUrl = isTeacher ? "/api/v1/groups/" : "/api/v1/groups/public";
         const [gRes, sRes] = await Promise.all([
           axios.get(groupsUrl),
@@ -164,7 +150,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Failed to load CRUD/public groups and students", err);
       }
 
-      // Merge data
       const mergedGroups: GroupData[] = [];
       if (isTeacher && groupStats.length > 0) {
         groupStats.forEach((gs: any) => {
@@ -183,7 +168,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
 
-      // Add remaining groups from apiGroups
       apiGroups.forEach((ag: any) => {
         if (!mergedGroups.find(g => g.id === ag.id || g.name === ag.name)) {
           mergedGroups.push({
@@ -200,7 +184,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-      // Merge students
       const mergedStudents: StudentData[] = [];
       if (isTeacher && studentRankings.length > 0) {
         studentRankings.forEach((sr: any) => {
@@ -218,7 +201,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
 
-      // Add remaining students from apiStudents
       apiStudents.forEach((as_: any) => {
         if (!mergedStudents.find(s => s.id === as_.id || s.email === as_.email)) {
           mergedStudents.push({
@@ -278,25 +260,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setGroups(prev => [...prev, newGroup]);
 
-    // Try to persist via API
     try {
       const res = await axios.post("/api/v1/groups/", { name, description: description || "" });
-      // Update with real ID from server
+
       setGroups(prev =>
         prev.map(g => (g.id === tempId ? { ...g, id: res.data.id } : g))
       );
     } catch {
-      // Keep local — API unavailable
+
     }
   }, []);
 
   const deleteGroup = useCallback(async (groupId: string) => {
     const groupToDelete = groups.find(g => g.id === groupId);
 
-    // Remove group from state
     setGroups(prev => prev.filter(g => g.id !== groupId));
 
-    // Unlink students from that group
     if (groupToDelete) {
       setStudents(prev =>
         prev.map(s =>
@@ -307,11 +286,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
     }
 
-    // Try to persist via API
     try {
       await axios.delete(`/api/v1/groups/${groupId}`);
     } catch {
-      // Keep local change
+
     }
   }, [groups]);
 
@@ -324,11 +302,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
     );
 
-    // Try to persist via API
     try {
       await axios.put(`/api/v1/students/${studentId}/group`, { group_id: groupId });
     } catch {
-      // Keep local change
+
     }
   }, []);
 

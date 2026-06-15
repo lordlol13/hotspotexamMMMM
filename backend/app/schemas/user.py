@@ -4,7 +4,6 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 from app.models.enums import UserRole
 
-# Core User Schemas
 class UserBase(BaseModel):
     email: EmailStr
     username: str = Field(..., min_length=3, max_length=50)
@@ -15,7 +14,6 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=10, max_length=128)
     role: UserRole = UserRole.STUDENT
 
-# Student Specific Registration Schema
 class StudentRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=10, max_length=128)
@@ -26,7 +24,6 @@ class StudentRegister(BaseModel):
     course_name: str = Field(..., min_length=2, max_length=255)
     group_name: Optional[str] = Field(None, description="Name of student group/class", min_length=2, max_length=100)
 
-# Teacher Specific Registration Schema
 class TeacherRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=10, max_length=128)
@@ -36,7 +33,6 @@ class TeacherRegister(BaseModel):
     department: Optional[str] = Field(None, min_length=2, max_length=255)
     title: Optional[str] = Field(None, min_length=2, max_length=100)
 
-# Profiles in response
 class StudentProfileResponse(BaseModel):
     student_code: Optional[str] = None
     faculty: Optional[str] = None
@@ -55,7 +51,6 @@ class TeacherProfileResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# User Response Schema
 class UserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
@@ -78,7 +73,6 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# Token Schemas
 class Token(BaseModel):
     access_token: str
     refresh_token: str
@@ -91,16 +85,13 @@ class TokenData(BaseModel):
 class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(..., min_length=20)
 
-# Password Reset Request
 class PasswordResetRequest(BaseModel):
     email: EmailStr
 
-# Password Reset Confirmation
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str = Field(..., min_length=10, max_length=128)
 
-# Email Verification Confirmation
 class EmailVerificationConfirm(BaseModel):
     token: str
 
