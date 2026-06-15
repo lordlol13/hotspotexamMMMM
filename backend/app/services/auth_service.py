@@ -156,7 +156,7 @@ class AuthService:
         if not user.is_active:
             raise AuthException("User account is inactive")
 
-        if not user.is_verified:
+        if settings.REQUIRE_EMAIL_VERIFICATION and not user.is_verified:
             raise AuthException("Email is not verified")
 
         return user

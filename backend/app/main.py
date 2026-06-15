@@ -1,6 +1,7 @@
 import logging
 import time
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -11,6 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes import api_router
 from app.config import settings
+from app.core.init_db import init_db
 from app.core.logging import configure_logging
 from app.database import engine
 from app.dependencies import RoleChecker
@@ -20,12 +22,32 @@ configure_logging(settings.LOG_LEVEL)
 settings.validate_production()
 logger = logging.getLogger("app")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        init_db()
+    except Exception:
+        logger.exception("init_db startup failed")
+    yield
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.ENABLE_DOCS else None,
     docs_url="/docs" if settings.ENABLE_DOCS else None,
     redoc_url="/redoc" if settings.ENABLE_DOCS else None,
+    lifespan=lifespan,
 )
+
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origin_regex=r"https://.*\.vercel\.app",
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    )
+
 
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
@@ -67,15 +89,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("unhandled_error", extra={"method": request.method, "path": request.url.path})
     return JSONResponse(status_code=500, content={"error": {"code": "internal_error", "message": "Internal server error"}})
 
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_origin_regex=r"https://.*\.vercel\.app",
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
-    )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
