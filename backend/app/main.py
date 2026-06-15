@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from app.api.routes import api_router
 from app.config import settings
@@ -79,10 +79,22 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"error": {"code": "validation_error", "message": "Request validation failed", "details": exc.errors()}},
     )
 
+@app.exception_handler(OperationalError)
+async def database_unavailable_handler(request: Request, exc: OperationalError):
+    """Transient DB issues (connection lost, server gone away, pool exhausted) — retryable."""
+    logger.exception("database_unavailable", extra={"method": request.method, "path": request.url.path})
+    return JSONResponse(
+        status_code=503,
+        content={"error": {"code": "database_unavailable", "message": "Database is temporarily unavailable, please retry"}},
+        headers={"Retry-After": "2"},
+    )
+
+
 @app.exception_handler(SQLAlchemyError)
 async def database_exception_handler(request: Request, exc: SQLAlchemyError):
+    """Non-transient DB errors — log and surface as 500 (programming/data bugs, not infra)."""
     logger.exception("database_error", extra={"method": request.method, "path": request.url.path})
-    return JSONResponse(status_code=503, content={"error": {"code": "database_unavailable", "message": "Database operation failed"}})
+    return JSONResponse(status_code=500, content={"error": {"code": "database_error", "message": "Internal server error"}})
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):

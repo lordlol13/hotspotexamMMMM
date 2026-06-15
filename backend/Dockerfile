@@ -23,5 +23,7 @@ RUN addgroup --system app && adduser --system --ingroup app app \
 USER app
 
 EXPOSE 8000
-# Run database migrations and launch Uvicorn, binding to Railway's dynamic $PORT variable
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --proxy-headers --forwarded-allow-ips='*'"]
+# Run database migrations and launch Uvicorn, binding to Railway's dynamic $PORT variable.
+# Workers default to 1 because managed Postgres (Railway) has tight connection limits;
+# raise WEB_CONCURRENCY only if you also raise DB connection limits.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-1} --proxy-headers --forwarded-allow-ips='*'"]

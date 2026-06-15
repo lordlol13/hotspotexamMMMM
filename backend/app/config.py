@@ -34,9 +34,10 @@ class Settings(BaseSettings):
     MAX_SLIDE_UPLOAD_BYTES: int = 20 * 1024 * 1024 * 1024
     MAX_MEDIA_UPLOAD_BYTES: int = 100 * 1024 * 1024
     TILE_CACHE_MAX_AGE_SECONDS: int = 86400
-    DB_POOL_SIZE: int = 10
-    DB_MAX_OVERFLOW: int = 20
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
     DB_POOL_RECYCLE_SECONDS: int = 1800
+    DB_POOL_TIMEOUT_SECONDS: int = 10
 
     ADMIN_EMAIL: str = "admin@edu.ru"
     ADMIN_USERNAME: str = "admin"

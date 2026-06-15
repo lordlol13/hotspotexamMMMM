@@ -1,7 +1,7 @@
 import os
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks, Response, status
+from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks, Response, status, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from app.config import settings
 from app.services.access_service import AccessService
 from app.services.audit_service import AuditService
 from app.models.enums import AuditAction
+from app.core.tile_tokens import create_tile_token, verify_tile_token
 
 router = APIRouter()
 
@@ -69,6 +70,33 @@ def get_slide_dzi(slide_id: uuid.UUID, db: Session = Depends(get_db), current_us
     processor.close()
     return Response(content=xml_content, media_type="application/xml", headers={"Cache-Control": f"private, max-age={settings.TILE_CACHE_MAX_AGE_SECONDS}"})
 
+@router.get("/{slide_id}/access-token")
+def get_slide_access_token(
+    slide_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Issue a short-lived signed token (10 min) for tile access.
+    Frontend passes this token as ?token=... in every tile URL.
+    Required because OpenSeadragon issues many parallel XHR tile
+    requests that we cannot reliably authorize via Authorization
+    headers (token refresh race, CORS preflight, etc.).
+    """
+    slide = SlideService.get_slide(db, slide_id)
+    if not slide.is_processed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Slide is still being processed",
+        )
+    token = create_tile_token(
+        slide_id=slide.id,
+        user_id=current_user.id,
+        role=str(current_user.role),
+    )
+    return {"access_token": token, "token_type": "Bearer", "expires_in": 600}
+
+
 @router.get("/{slide_id}/tiles/{level}/{col}_{row}.jpeg")
 @router.get("/{slide_id}/tiles/{level}/{col}_{row}.jpg")
 def get_slide_tile(
@@ -76,15 +104,31 @@ def get_slide_tile(
     level: int,
     col: int,
     row: int,
+    token: str = "",
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
 ):
     """
     Serve slide tiles dynamically on-demand.
     Used by OpenSeadragon for pan/zoom resolution changes.
+    Authorization is via a short-lived signed `token` query param
+    (issued by /access-token), not via JWT. This is intentional:
+    OpenSeadragon's tile XHRs can't reliably carry Authorization
+    headers across all the levels it requests in parallel.
     """
+    payload = verify_tile_token(token, expected_slide_id=slide_id)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired tile access token",
+        )
+
     tile_bytes = SlideService.get_slide_tile(db, slide_id, level, col, row)
-    return Response(content=tile_bytes, media_type="image/jpeg", headers={"Cache-Control": f"private, max-age={settings.TILE_CACHE_MAX_AGE_SECONDS}"})
+    response = Response(
+        content=tile_bytes,
+        media_type="image/jpeg",
+        headers={"Cache-Control": f"private, max-age={settings.TILE_CACHE_MAX_AGE_SECONDS}"},
+    )
+    return response
 
 @router.get("/{slide_id}/thumbnail")
 def get_slide_thumbnail(slide_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):

@@ -15,10 +15,6 @@ const logger = {
   info: (...args: any[]) => console.info("[SlideViewer]", ...args),
 };
 
-function getAuthToken(): string | null {
-  return localStorage.getItem("access_token");
-}
-
 interface SlideViewerProps {
   slideId: string;
   highlightRegion?: {
@@ -43,6 +39,10 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
   const [metadata, setMetadata] = useState<{ width: number; height: number; title: string } | null>(null);
   const osdViewerRef = useRef<OpenSeadragon.Viewer | null>(null);
   const [viewerInstance, setViewerInstance] = useState<OpenSeadragon.Viewer | null>(null);
+  // Current signed tile token; refreshed by the effect below before it expires.
+  const tileTokenRef = useRef<string | null>(null);
+  const tileTokenExpiresAtRef = useRef<number>(0); // epoch ms
+  const tileTokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -91,6 +91,42 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
     };
   }, [slideId]);
 
+  // Fetch and auto-refresh the signed tile token. The viewer effect
+  // reads the latest value via tileTokenRef.
+  useEffect(() => {
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const fetchToken = async () => {
+      try {
+        const res = await axios.get(`/api/v1/slides/${slideId}/access-token`);
+        if (!active) return;
+        const token: string = res.data?.access_token;
+        const expiresIn: number = Number(res.data?.expires_in ?? 600);
+        if (!token) throw new Error("missing access_token in response");
+        tileTokenRef.current = token;
+        // Refresh 60s before expiry to avoid races with in-flight tile requests.
+        const refreshInMs = Math.max(30_000, (expiresIn - 60) * 1000);
+        tileTokenExpiresAtRef.current = Date.now() + expiresIn * 1000;
+        timer = setTimeout(fetchToken, refreshInMs);
+      } catch (err) {
+        if (!active) return;
+        logger.error("Failed to fetch tile access token:", err);
+        // Retry with backoff. If the user is unauthenticated the backend
+        // will return 401 and the global axios interceptor will kick in.
+        timer = setTimeout(fetchToken, 5000);
+      }
+    };
+
+    fetchToken();
+
+    return () => {
+      active = false;
+      if (timer) clearTimeout(timer);
+      tileTokenTimerRef.current = null;
+    };
+  }, [slideId]);
+
   useEffect(() => {
     if (loading || error || !metadata || !viewerRef.current) return;
 
@@ -98,8 +134,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       osdViewerRef.current.destroy();
       osdViewerRef.current = null;
     }
-
-    const token = getAuthToken();
 
     const tileSource = {
       width: metadata.width,
@@ -110,7 +144,11 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       maxLevel: Math.ceil(Math.log2(Math.max(metadata.width, metadata.height))),
       getTileUrl: function (level: number, x: number, y: number) {
         const baseUrl = axios.defaults.baseURL || "";
-        return `${baseUrl}/api/v1/slides/${slideId}/tiles/${level}/${x}_${y}.jpeg`;
+        // Tile auth is now via short-lived signed token in the query string,
+        // not Authorization header — OpenSeadragon can't reliably forward
+        // headers across all of its parallel tile XHRs.
+        const t = tileTokenRef.current || "";
+        return `${baseUrl}/api/v1/slides/${slideId}/tiles/${level}/${x}_${y}.jpeg?token=${encodeURIComponent(t)}`;
       }
     };
 
@@ -138,7 +176,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       },
 
       loadTilesWithAjax: true,
-      ajaxHeaders: token ? { Authorization: `Bearer ${token}` } : {},
     });
 
     osdViewerRef.current = viewer;
