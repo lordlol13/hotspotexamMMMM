@@ -699,70 +699,94 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               sx={{ mb: 2.5 }}
             />
 
-            {/* Group and Course side-by-side */}
-            <Box sx={{ display: "flex", gap: 2, mb: 2.5 }}>
-              <Box sx={{ width: "50%" }}>
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
-                >
-                  Группа
-                </Typography>
-                <FormControl fullWidth size="small" disabled={submitting}>
-                  <Select
-                    value={group}
-                    onChange={(e) => setGroup(e.target.value as string)}
-                  >
-                    <MenuItem value="Без группы">Без группы</MenuItem>
-                    {availableGroups.map((g) => (
-                      <MenuItem key={g.id} value={g.name}>
-                        {g.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box sx={{ width: "50%" }}>
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
-                >
-                  Курс
-                </Typography>
-                <FormControl fullWidth size="small" disabled={submitting}>
-                  <Select
-                    value={course}
-                    onChange={(e) => setCourse(e.target.value as string)}
-                  >
-                    <MenuItem value="—">—</MenuItem>
-                    <MenuItem value="1 курс">1 курс</MenuItem>
-                    <MenuItem value="2 курс">2 курс</MenuItem>
-                    <MenuItem value="3 курс">3 курс</MenuItem>
-                    <MenuItem value="4 курс">4 курс</MenuItem>
-                    <MenuItem value="5 курс">5 курс</MenuItem>
-                    <MenuItem value="6 курс">6 курс</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-            </Box>
+            {/* Group and Course side-by-side (Students only) */}
+            {role === "student" ? (
+              <>
+                <Box sx={{ display: "flex", gap: 2, mb: 2.5 }}>
+                  <Box sx={{ width: "50%" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
+                    >
+                      Группа
+                    </Typography>
+                    <FormControl fullWidth size="small" disabled={submitting}>
+                      <Select
+                        value={group}
+                        onChange={(e) => setGroup(e.target.value as string)}
+                      >
+                        <MenuItem value="Без группы">Без группы</MenuItem>
+                        {availableGroups.map((g) => (
+                          <MenuItem key={g.id} value={g.name}>
+                            {g.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ width: "50%" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
+                    >
+                      Курс
+                    </Typography>
+                    <FormControl fullWidth size="small" disabled={submitting}>
+                      <Select
+                        value={course}
+                        onChange={(e) => setCourse(e.target.value as string)}
+                      >
+                        <MenuItem value="—">—</MenuItem>
+                        <MenuItem value="1 курс">1 курс</MenuItem>
+                        <MenuItem value="2 курс">2 курс</MenuItem>
+                        <MenuItem value="3 курс">3 курс</MenuItem>
+                        <MenuItem value="4 курс">4 курс</MenuItem>
+                        <MenuItem value="5 курс">5 курс</MenuItem>
+                        <MenuItem value="6 курс">6 курс</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Box>
 
-            {/* Дополнительно */}
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
-            >
-              Дополнительно (специальность, заметка)
-            </Typography>
-            <TextField
-              fullWidth
-              disabled={submitting}
-              placeholder="напр. Биология, подгруппа Б"
-              variant="outlined"
-              size="small"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              sx={{ mb: 2.5 }}
-            />
+                {/* Дополнительно */}
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
+                >
+                  Дополнительно (специальность, заметка)
+                </Typography>
+                <TextField
+                  fullWidth
+                  disabled={submitting}
+                  placeholder="напр. Биология, подгруппа Б"
+                  variant="outlined"
+                  size="small"
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  sx={{ mb: 2.5 }}
+                />
+              </>
+            ) : (
+              <>
+                {/* Предметы для Преподавателя */}
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
+                >
+                  Предмет(ы)
+                </Typography>
+                <TextField
+                  fullWidth
+                  disabled={submitting}
+                  placeholder="напр. Гистология, Анатомия"
+                  variant="outlined"
+                  size="small"
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  sx={{ mb: 2.5 }}
+                />
+              </>
+            )}
 
             {/* Email */}
             <Typography
