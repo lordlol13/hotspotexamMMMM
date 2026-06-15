@@ -160,7 +160,7 @@ export const useAuth = () => {
 const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToRegister }) => {
   const { login } = useAuth();
   const [email, setEmail] = useState("admin@hotspot.com");
-  const [password, setPassword] = useState("admin123");
+  const [password, setPassword] = useState("admin12345");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -420,7 +420,7 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
               fontFamily: "monospace",
             }}
           >
-            Демо-админ: admin@hotspot.com / admin123
+            Демо-админ: admin@hotspot.com / admin12345
           </Typography>
         </Box>
       </Box>
@@ -462,6 +462,10 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
     e.preventDefault();
     if (!email || !name || !password) {
       setError("Пожалуйста, заполните Email, Имя и Пароль.");
+      return;
+    }
+    if (password.length < 10) {
+      setError("Пароль должен содержать не менее 10 символов.");
       return;
     }
     
@@ -820,6 +824,7 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               placeholder="••••••••"
               variant="outlined"
               size="small"
+              helperText="Пароль должен содержать не менее 10 символов"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               sx={{ mb: 3 }}
