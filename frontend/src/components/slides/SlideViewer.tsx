@@ -109,7 +109,8 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
       minLevel: 0,
       maxLevel: Math.ceil(Math.log2(Math.max(metadata.width, metadata.height))),
       getTileUrl: function (level: number, x: number, y: number) {
-        return `/api/v1/slides/${slideId}/tiles/${level}/${x}_${y}.jpeg`;
+        const baseUrl = axios.defaults.baseURL || "";
+        return `${baseUrl}/api/v1/slides/${slideId}/tiles/${level}/${x}_${y}.jpeg`;
       }
     };
 
