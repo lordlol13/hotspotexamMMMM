@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration 3 verification: Profile menu card (single card, per-row dialogs incl. logout), navbar without logout/theme toggle, editor annotation tools (arrow/arrow_double/line/comment + color palette), annotations persistence on POST/PUT/export, annotations visible to students (not stripped), seed exam contains 1 arrow + 1 comment, duplicate-hotspot, and student exam regression. Backend: 27/27 pytest tests passed (12 existing + 9 prior new + 6 new annotation tests in test_annotations.py). Frontend Playwright verified: navbar has NO logout-btn and NO theme-toggle-btn after login (admin@hotspot.com/admin123); /profile renders single profile-menu-card with rows profile-row-{name,password,theme,language,logout}; clicking each row opens dialog-{name,password,theme,language,logout}; name change persists in navbar-user-name; theme-dark-btn sets html.dark=true and persists after reload; theme-light-btn reverts; lang-en-btn switches navbar to English (Exams) and lang-ru-btn back (Экзамены); profile-row-logout → dialog-logout → confirm-logout-btn redirects to /login. Editor (seed exam): toolbar exposes tool-arrow, tool-arrow_double, tool-line, tool-comment and annotation-color-palette becomes visible after selecting any annotation tool; dragging on editor-canvas with tool-arrow added an annotation-item-* (count 2→3 from seed); save-exam-btn + reload preserves the new annotation; duplicate-hotspot-{id} increased hotspots 4→5. Student view of seed 'Строение клетки': renders 3 read-only annotation overlays (2 seed + 1 added by editor test) and the click-hotspot → choose option → submit-answer flow returns feedback (red 'Неверно' banner visible) — regression OK.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/backend/tests/test_annotations.py",
+    "/app/test_reports/pytest/results.xml"
+  ],
+  "action_items": [
+    "(Test-environment note, not a product bug) page.mouse.click() at a precise canvas coordinate did not always trigger the comment-dialog via onCanvasClick(). The same handler is verified working through the seed exam (comment annotation renders end-to-end for the student). If you want Playwright to add a fresh comment in CI, dispatch a native DOM 'click' event on the [data-testid=editor-canvas] image directly instead of using global mouse.click."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now 896 lines (single file). Keep planning to split into routers (auth, exams, students/groups, files, annotations) once it crosses ~1000 lines.",
+    "strip_answers() now correctly preserves 'annotations' for students while hiding correct_answer/explanation/explanation_image/video_url on hotspots — confirmed by test_student_sees_annotations_but_not_correct_answers.",
+    "AdminExamEditor.jsx is 587 lines and mixes mouse handling, drawing, dialogs, sidebar lists. Consider extracting AnnotationPalette / HotspotForm / AnnotationsSidebar into their own components.",
+    "Annotation list rendering uses sequential map without keyed dedup; if a duplicate id ever sneaks in (e.g. duplicate-hotspot copies annotations array elsewhere) React keys will warn. Guard by always generating new ids on import/duplicate.",
+    "comment-dialog opens from onCanvasClick only; on touch devices a tap may register differently. Consider also opening from onTouchEnd for tablets.",
+    "ExamCreate.annotations is typed as List[Dict[str,Any]] — no Pydantic shape validation. A malformed annotation (missing coordinates) could be accepted and crash AnnotationLayer.jsx. Add a minimal AnnotationModel union with discriminator on 'type'."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_annotations.py (NEW)",
+    "/app/test_reports/pytest/results.xml",
+    "/app/test_reports/iteration_3.json"
+  ],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "100% of attempted flows"},
+  "test_credentials": "Teacher: admin@hotspot.com / admin123. Students self-register via /login Регистрация tab. Did NOT change the admin password (used a fresh TEST_pw_* student for password-change tests).",
+  "seed_data_creation": "Created+cleaned up TEST_annot_create, TEST_annot_upd, TEST_annot_exp, TEST_annot_strip exams via API. Created a few TEST_anno_*, TEST_annot_s_* student users (harmless). Through the UI test the seed exam 'Строение клетки' gained 1 extra annotation (3 total) and 1 extra duplicated hotspot (5 total) – these are not cleaned because the seed is meant to be re-editable, but the seed will be re-created with original 2 annotations + 4 hotspots only if the DB is wiped.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All iteration-3 features verified end-to-end. Backend pytest suite (27 tests) covers auth/profile/password/role/exams/answers/strip/groups/students/grades, media+new shapes (iter 2) and the new annotation persistence + seed annotations + student visibility (iter 3). Frontend Playwright verified Profile menu card with all 5 per-row dialogs, navbar without logout/theme toggle, theme persistence after reload, language switch, editor annotation toolbar + color palette, drag-to-create arrow, save+reload persistence, duplicate-hotspot, and student-side annotation overlay + regression of click→answer→feedback. NOTE: programmatic mouse.click() on the editor-canvas doesn't always fire onCanvasClick — for the comment dialog use page.evaluate to dispatch a synthetic click on the canvas img element, or test via the seeded comment annotation which already exercises the read-only render path.",
+  "rca of the issue": "No product bugs. Single environmental note above re: Playwright canvas click for comment-dialog."
+}

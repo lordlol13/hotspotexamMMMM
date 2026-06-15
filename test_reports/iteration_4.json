@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 4 verification — exam→group assignments with deadlines + richer student registration. Backend: 39/39 pytest pass (12 new in test_assignments.py covering public groups, registration with group/course/info, teacher fields ignored, assignment create/replace/get, student visibility in/out of assigned group, public (unassigned) exam visible to all, deadline auto-close + 403 on /api/answer, /api/teacher/results due_date column + overdue=true for incomplete past-due, seed 'Строение клетки' remains public; 27 prior tests still pass). Frontend Playwright verified: (1) /login Регистрация tab with role=student shows register-group-select (existing groups + Без группы, 2 options observed), register-course-select (1–6, 6 options), register-info-input — and these are hidden when role=teacher. (2) Registering a student with group/course=3/info='Биолог-любитель' auto-logs-in to /dashboard; /profile profile-student-meta renders '3 курс · Биолог-любитель'. (3) Student dashboard lists seed exam 'Строение клетки'. (4) /teacher exam card has assign-exam-{id}; clicking opens assign-dialog containing assign-group-{gid} checkboxes (1 group seen), assign-due-input, and save-assign-btn. (5) After API-assigning a TEST exam to a TEST group with a PAST due date, student /dashboard shows due-{eid} = 'Срок истёк' and the Start button is disabled with label 'Закрыт'; POST /api/answer returns 403 with 'Срок сдачи экзамена истёк'. (6) /teacher/grades table has the 'Срок' column. Seed 'Строение клетки' confirmed unassigned (group_ids=[], due_date=null) so the demo remains publicly answerable.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_assignments.py",
+    "/app/backend/tests/test_annotations.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/backend/tests/test_backend.py",
+    "/app/test_reports/pytest/results.xml",
+    "/app/test_reports/pytest/results_iter4.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now 1015 lines — exceeds the 700-line guideline. Split into routers/modules (auth, exams, answers, groups, students, assignments, files) and a shared deps.py for get_current_user/require_admin. Refactor is now overdue.",
+    "parse_due() in server.py uses datetime.fromisoformat which only accepts 'YYYY-MM-DD' or full ISO. If the client sends 'DD.MM.YYYY' or empty whitespace, the POST /api/assignments will 500. Add try/except → HTTPException(400, 'Invalid date format') and trim input.",
+    "GET /api/assignments returns the due_date from rows[0] only. If somehow rows have differing due_dates (e.g. legacy data), the response is misleading. Either enforce a single due_date per exam at the schema level (which set_assignments already does) or return per-group due_dates.",
+    "student_exams iterates exams and, for each, awaits db.results.find_one — N+1 queries. For 1000+ exams this will be slow. Use a single $in query and build a dict by exam_id.",
+    "AssignmentBody.group_ids is List[str] with no de-dup; if a teacher sends duplicate group_ids the same row will be inserted twice (delete_many resets first so it's idempotent within a single POST, but still worth dedup'ing).",
+    "is_overdue() compares now() to a stored ISO string but the stored value already includes tzinfo (parse_due sets UTC). Good. However the assignment doc stores due_date as a string — keep this in mind if you ever add a Mongo TTL index.",
+    "Front-end public groups dropdown shows 'Без группы' option but registration with group_id=null/'' is also accepted by backend (test_unassigned_exam_visible_to_all passes for student with no group). Make sure the UI value for 'Без группы' submits null/empty, not the literal string."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_assignments.py (NEW — 12 tests)",
+    "/app/test_reports/pytest/results.xml",
+    "/app/test_reports/pytest/results_iter4.xml",
+    "/app/test_reports/iteration_4.json"
+  ],
+  "success_rate": {"backend": "100% (39/39)", "frontend": "100% of attempted flows"},
+  "test_credentials": "Teacher: admin@hotspot.com / admin123. Students self-register via /login Регистрация tab. Did NOT touch admin password.",
+  "seed_data_creation": "All TEST_ test exams (TEST_assign_*, TEST_overdue_*, TEST_due_exam_*, TEST_public_*) and TEST groups (TEST_grpA_*, TEST_grpB_*, TEST_due_*) are deleted by their fixtures / inline cleanup. Several TEST_ student users + the TEST_ui_* student created via UI remain in db.users (harmless, no API to bulk-delete students by prefix). Seed exam 'Строение клетки' confirmed unassigned (group_ids=[], due_date=null) — stays publicly visible & answerable.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 4 fully green. New backend test file is /app/backend/tests/test_assignments.py (12 tests). Run all tests with: REACT_APP_BACKEND_URL=https://hotspot-test-pro.preview.emergentagent.com pytest /app/backend/tests/ -v (39 tests, ~50s). When asserting overdue=true via /api/teacher/results, you must first create a result row WHILE the assignment is future (POST /api/answer succeeds), THEN re-assign with a past due date — backend correctly returns overdue=True only when completed=False AND due in past. Frontend selectors used: tab-login, tab-register, role-student-btn, role-teacher-btn, register-{group-select,course-select,info-input,name-input,email-input,password-input}, register-submit-btn, login-{email-input,password-input,submit-btn}, profile-student-meta, assign-exam-{id}, assign-dialog, assign-group-{gid}, assign-due-input, save-assign-btn, due-{examId}. Seed exam id at time of test: 3f55b7e4-8a6d-42c0-a2e3-908f68745dd3.",
+  "rca of the issue": "No product bugs. Initial pytest run failed only because the empty BASE_URL fallback wasn't combined with /api — fixed by adding the default frontend URL to test_assignments.py, matching the pattern used in the other test files."
+}

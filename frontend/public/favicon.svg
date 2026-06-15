@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0040b0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0040b0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Background Shape (hexagonal or rounded cell contour) -->
+  <rect x="5" y="5" width="90" height="90" rx="24" fill="#0f172a" />
+  
+  <!-- Outer glowing ring / microscope scope -->
+  <circle cx="50" cy="50" r="32" stroke="url(#grad1)" stroke-width="4" fill="none" opacity="0.8" />
+  
+  <!-- Inner ring -->
+  <circle cx="50" cy="50" r="22" stroke="url(#grad2)" stroke-width="2" fill="none" opacity="0.5" stroke-dasharray="4 2" />
+
+  <!-- Cell / Core (abstract microscope focal point) -->
+  <circle cx="50" cy="50" r="12" fill="url(#grad1)" filter="url(#glow)" />
+  
+  <!-- Floating cellular organelles / decorative dots -->
+  <circle cx="38" cy="38" r="3" fill="#06b6d4" />
+  <circle cx="62" cy="42" r="2" fill="#10b981" />
+  <circle cx="45" cy="65" r="4" fill="#0040b0" opacity="0.7" />
+  <circle cx="58" cy="60" r="2" fill="#06b6d4" />
+
+  <!-- Microscope reticle crosshairs (very subtle) -->
+  <line x1="50" y1="12" x2="50" y2="28" stroke="#f8fafc" stroke-width="1.5" opacity="0.3" />
+  <line x1="50" y1="72" x2="50" y2="88" stroke="#f8fafc" stroke-width="1.5" opacity="0.3" />
+  <line x1="12" y1="50" x2="28" y2="50" stroke="#f8fafc" stroke-width="1.5" opacity="0.3" />
+  <line x1="72" y1="50" x2="88" y2="50" stroke="#f8fafc" stroke-width="1.5" opacity="0.3" />
+</svg>

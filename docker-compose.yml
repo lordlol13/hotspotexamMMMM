@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: emergent_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: emergent_db
+      POSTGRES_USER: emergent
+      POSTGRES_PASSWORD: emergent_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emergent -d emergent_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: emergent_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://emergent:emergent_pass@db:5432/emergent_db"
+      JWT_SECRET: "secret-key-change-me-in-production-super-long-hex-string"
+      ADMIN_EMAIL: "admin@emergent.edu"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin123"
+      ADMIN_FULL_NAME: "System Admin"
+      BACKEND_CORS_ORIGINS: "http://localhost:3000,http://localhost:8000"
+      ENVIRONMENT: "development"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build: ./frontend
+    container_name: emergent_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+
+volumes:
+  pg_data:
+  uploads_data:

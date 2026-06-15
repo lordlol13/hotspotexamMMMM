@@ -1,0 +1,38 @@
+{
+  "summary": "Iteration 2 testing of NEW features: profile/theme/language + registration role + teacher trial test + new shape types + shape adjust handles + hotspot media (question/option/explanation images + video). Backend: 21/21 pytest tests passed (12 existing + 9 new in test_new_features.py). Frontend: registration role buttons present; teacher login works; profile page exposes name/theme/language/password controls; theme-dark-btn toggles 'dark' class on <html> and persists after reload via PUT /api/auth/profile; language-select switches ru/en (verified theme=light lang=en after switch via /api/auth/me); /teacher dashboard shows 3 try-exam-* buttons that navigate to /exam/{id}; editor toolbar exposes tool-rectangle/circle/ellipse/triangle/diamond/polygon + save-exam-btn + preview-btn (Пробный тест); selecting an existing hotspot shows all 4 resize handles (resize-nw/ne/sw/se); dragging on editor-canvas with tool-triangle creates a new hotspot and auto-opens the form dialog with hs-question-image, hs-option-image-0, hs-option-image-1, hs-explanation-image and hs-video-input fields present; student exam with rich media shows question-image in modal and 2 option buttons (option-0/1); answer flow correctly returns explanation+video from /api/answer (verified via backend test) and exam completes; student-stripped GET /api/exams/{id} hides correct_answer/explanation/explanation_image/video_url (test_student_strips_explanation_media).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/results.xml"
+  ],
+  "action_items": [
+    "(Docs only) Review request mentions selector 'hotspot-hit-{id}' for the student exam taker, but in HotspotLayer.jsx the student-side hotspots use 'hotspot-{id}'. The 'hotspot-hit-{id}' selector is only used in the editor (AdminExamEditor.jsx). Update review-request docs to reflect this distinction.",
+    "(Docs only) The 'try exam' button on the EDITOR is data-testid='preview-btn' (label 'Пробный тест'); 'try-exam-{id}' is only on the /teacher exam cards. Both work."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now 886 lines; still monolithic. Consider splitting auth / exams / students+groups / files into separate routers when adding more features.",
+    "strip_answers() correctly hides 'correct_answer','explanation','explanation_image','video_url' from students while keeping 'question_image' and 'option_images' visible — good.",
+    "Bare 'except Exception' in verify_password() and storage init swallows errors silently. Log at least the exception type for debuggability.",
+    "/api/upload builds url from FRONTEND_URL env which is the backend public URL — variable name is misleading. Rename to BACKEND_PUBLIC_URL.",
+    "ProfileBody silently ignores invalid theme/language values (verified). Consider returning 400 to make API errors explicit instead of silent no-op.",
+    "AdminExamEditor.jsx renders both move/resize/vertex handles + drag handlers — touch devices may not get the same UX; consider pointer events instead of mouse events for tablet support."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/results.xml",
+    "/app/test_reports/iteration_2.json"
+  ],
+  "success_rate": {"backend": "100% (21/21)", "frontend": "100% of attempted flows"},
+  "test_credentials": "Teacher: admin@hotspot.com / admin123. Students self-register via /login Регистрация tab with role=student.",
+  "seed_data_creation": "Created and cleaned up TEST_media_shapes, TEST_strip, TEST_poly, TEST_view2 exams via API. Created a few TEST_stu_/TEST_t_/TEST_pw_ users for role+password tests (left in DB; harmless).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All new iteration features are working end-to-end. Backend pytest suite (21 tests) covers auth/profile/password/role/exams/answers/strip/groups/students/grades and the new media+shape persistence. Frontend Playwright verified profile (theme+language+name+password testids), theme dark persistence after reload, registration role buttons, teacher trial buttons on /teacher, editor toolbar (all 6 shapes + select), resize handles on selected hotspot, triangle drag-create opening the rich media dialog, and student question-modal showing question-image + option-* + submit-answer-btn. Polygon vertex drag was not interactively tested (mouse-drag of 'vertex-{i}' is environment-flaky) but the backend persistence path for polygon vertex updates is covered by test_polygon_shape_persistence.",
+  "rca of the issue": "No bugs to RCA. Note that the selector naming convention is split intentionally: 'hotspot-hit-{id}' = editor click target; 'hotspot-{id}' = student-facing shape; both verified."
+}
