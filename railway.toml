@@ -1,8 +1,0 @@
-# Railway Configuration File for Multi-Service Deployments
-[build]
-builder = "NIXPACKS" # nixpacks auto-detects or falls back to Dockerfile if configured in service settings
-
-[deploy]
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 5
-numReplicas = 1
