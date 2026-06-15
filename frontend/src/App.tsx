@@ -33,6 +33,7 @@ import {
   Collapse,
   FormControlLabel,
   Switch,
+  Snackbar,
 } from "@mui/material";
 import {
   DescriptionOutlined as DescriptionOutlinedIcon,
@@ -1931,6 +1932,18 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 
+let globalAlertHandler: ((message: string) => void) | null = null;
+
+if (typeof window !== "undefined") {
+  window.alert = (message: string) => {
+    if (globalAlertHandler) {
+      globalAlertHandler(message);
+    } else {
+      console.log("Alert buffered:", message);
+    }
+  };
+}
+
 export const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -1945,6 +1958,23 @@ export const App: React.FC = () => {
   const [language, setLanguage] = useState<"ru" | "en">(() => {
     return (localStorage.getItem("language") as "ru" | "en") || "ru";
   });
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  useEffect(() => {
+    globalAlertHandler = (message: string) => {
+      setSnackbarMessage(message);
+      setSnackbarOpen(true);
+    };
+    return () => {
+      globalAlertHandler = null;
+    };
+  }, []);
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
 
   const handleSetThemeMode = (mode: "light" | "dark") => {
     setThemeMode(mode);
@@ -2178,6 +2208,32 @@ export const App: React.FC = () => {
             </DataProvider>
           </BrowserRouter>
         )}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          sx={{ mb: { xs: 8, md: 0 } }}
+        >
+          <Paper
+            elevation={6}
+            sx={{
+              p: 2,
+              px: 2.5,
+              bgcolor: "text.primary",
+              color: "background.paper",
+              borderRadius: "10px",
+              fontSize: "0.88rem",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+              maxWidth: 350,
+            }}
+          >
+            {snackbarMessage}
+          </Paper>
+        </Snackbar>
       </ThemeProvider>
     </AuthContext.Provider>
   );

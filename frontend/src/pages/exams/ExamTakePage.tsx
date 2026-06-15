@@ -191,6 +191,19 @@ export const ExamTakePage: React.FC = () => {
     );
   }
 
+  if (exam.questions.length === 0) {
+    return (
+      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh" p={3} bgcolor="#f8fafc">
+        <Typography variant="h6" align="center" gutterBottom>
+          Этот экзамен не содержит вопросов.
+        </Typography>
+        <Button variant="contained" onClick={() => navigate("/exams")} sx={{ mt: 2, bgcolor: "#0040b0" }}>
+          Вернуться к экзаменам
+        </Button>
+      </Box>
+    );
+  }
+
   const activeQuestion = exam.questions[currentIdx];
 
   const handleFlagToggle = async (questionId: string) => {
