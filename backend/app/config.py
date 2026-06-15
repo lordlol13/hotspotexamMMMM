@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "admin123"
     ADMIN_FULL_NAME: str = "System Admin"
     
+    # Email Verification
+    # Set to False to allow users to log in without verifying their email address.
+    # Useful when SMTP is not configured (e.g. early production deployments).
+    REQUIRE_EMAIL_VERIFICATION: bool = True
+
     # SMTP Email Configuration
     SMTP_HOST: str = "127.0.0.1"
     SMTP_PORT: int = 1025
