@@ -329,7 +329,7 @@ export const TeacherDashboard: React.FC = () => {
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
               Соотношение сдачи экзаменов
             </Typography>
-            <Box sx={{ width: "100%", height: 250, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Box sx={{ width: "100%", height: 250, display: "flex", justifyContent: "center", alignItems: "center", minWidth: 0 }}>
               <ResponsiveContainer>
                 <PieChart>
                   <Pie
@@ -369,7 +369,7 @@ export const TeacherDashboard: React.FC = () => {
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
               Успеваемость по учебным группам
             </Typography>
-            <Box sx={{ width: "100%", height: 250 }}>
+            <Box sx={{ width: "100%", height: 250, minWidth: 0 }}>
               <ResponsiveContainer>
                 <BarChart data={groups} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" />

@@ -250,7 +250,7 @@ export const StudentDashboard: React.FC = () => {
             </Typography>
 
             {trends.length > 0 ? (
-              <Box sx={{ width: "100%", height: 250 }}>
+              <Box sx={{ width: "100%", height: 250, minWidth: 0 }}>
                 <ResponsiveContainer>
                   <AreaChart data={trends} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                     <defs>

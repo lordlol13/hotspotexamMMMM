@@ -13,6 +13,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { getAppTheme } from "./theme";
 import {
   Box,
+  Paper,
   AppBar,
   Toolbar,
   Typography,
@@ -1862,14 +1863,67 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         sx={{
           pt: 12,
           px: { xs: 2, sm: 4 },
-          pb: 6,
+          pb: { xs: 12, md: 6 },
           boxSizing: "border-box",
         }}
       >
         {children}
       </Box>
 
-      {}
+      {user && (
+        <Paper
+          elevation={10}
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: { xs: "flex", md: "none" },
+            justifyContent: "space-around",
+            alignItems: "center",
+            height: 64,
+            borderTop: "1px solid",
+            borderColor: "divider",
+            bgcolor: "background.paper",
+            zIndex: 1000,
+            pb: "safe-area-inset-bottom",
+          }}
+        >
+          {menuItems.map((item, index) => {
+            const isActive = getActiveTab() === index;
+            return (
+              <Box
+                key={item.text}
+                component={Link}
+                to={item.path}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textDecoration: "none",
+                  color: isActive ? "primary.main" : "text.secondary",
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  flex: 1,
+                  py: 1,
+                  transition: "color 0.2s ease",
+                  "&:hover": {
+                    color: "primary.main",
+                  },
+                }}
+              >
+                <Box sx={{ display: "flex", color: "inherit", mb: 0.3 }}>
+                  {item.icon}
+                </Box>
+                {item.text}
+              </Box>
+            );
+          })}
+        </Paper>
+      )}
+
       <ProfileSettingsDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
     </Box>
   );

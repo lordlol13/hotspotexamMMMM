@@ -223,7 +223,7 @@ export const GradesPage: React.FC = () => {
                         Динамика успеваемости
                       </Typography>
                     </Box>
-                    <Box sx={{ height: 160, width: "100%" }}>
+                    <Box sx={{ height: 160, width: "100%", minWidth: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={studentData.score_trends}>
                           <defs>
