@@ -29,7 +29,8 @@ class SlideService:
 
         file.file.seek(0)
         with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            while chunk := file.file.read(1024 * 1024):
+                buffer.write(chunk)
 
         file_size = os.path.getsize(file_path)
         if file_size > settings.MAX_SLIDE_UPLOAD_BYTES:
