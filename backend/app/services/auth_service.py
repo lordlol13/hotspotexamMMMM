@@ -63,7 +63,7 @@ class AuthService:
             first_name=schema.first_name,
             last_name=schema.last_name,
             role=UserRole.STUDENT,
-            is_verified=False,  # Needs email verification
+            is_verified=True,  # Automatically verified for simplified deployment
             verification_token=verification_token
         )
         db.add(user)
@@ -115,7 +115,7 @@ class AuthService:
             first_name=schema.first_name,
             last_name=schema.last_name,
             role=UserRole.TEACHER,
-            is_verified=False,
+            is_verified=True,  # Automatically verified for simplified deployment
             verification_token=verification_token
         )
         db.add(user)
