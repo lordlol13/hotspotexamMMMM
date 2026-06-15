@@ -23,20 +23,18 @@ class SlideService:
 
     @classmethod
     def save_slide_file(cls, slide_id: uuid.UUID, file: UploadFile) -> str:
-        """Save the raw slide file to disk."""
         slide_dir = cls.get_slide_dir(slide_id)
         ext = os.path.splitext(file.filename)[1].lower()
         file_path = os.path.join(slide_dir, f"original{ext}")
 
-        total = 0
+        file.file.seek(0)
         with open(file_path, "wb") as buffer:
-            while chunk := file.file.read(1024 * 1024):
-                total += len(chunk)
-                if total > settings.MAX_SLIDE_UPLOAD_BYTES:
-                    buffer.close()
-                    os.remove(file_path)
-                    raise BadRequestException("Slide exceeds configured upload limit")
-                buffer.write(chunk)
+            shutil.copyfileobj(file.file, buffer)
+
+        file_size = os.path.getsize(file_path)
+        if file_size > settings.MAX_SLIDE_UPLOAD_BYTES:
+            os.remove(file_path)
+            raise BadRequestException("Slide exceeds configured upload limit")
 
         return file_path
 
