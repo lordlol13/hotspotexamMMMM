@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box, Button, Card, CardContent, Divider, Grid, MenuItem,
@@ -94,6 +94,20 @@ export const ExamListPage: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedSlideId, setUploadedSlideId] = useState<string | null>(null);
   const [slideTitle, setSlideTitle] = useState("");
+
+  // Non-blocking background uploads. The teacher can keep editing
+  // regions / switching slides while files are uploading in here.
+  // Each item shows up immediately in the side panel and disappears
+  // when the upload finishes (success or fail).
+  interface IncomingUpload {
+    id: string;
+    name: string;
+    progress: number;
+    status: "uploading" | "done" | "error";
+    slideId?: string;
+  }
+  const [incomingUploads, setIncomingUploads] = useState<IncomingUpload[]>([]);
+  const backgroundUploadInputRef = useRef<HTMLInputElement>(null);
   const [creatorRegions, setCreatorRegions] = useState<any[]>([]);
   const [editingExamId, setEditingExamId] = useState<string | null>(null);
   const [existingSlides, setExistingSlides] = useState<any[]>([]);
@@ -341,6 +355,88 @@ export const ExamListPage: React.FC = () => {
       });
       alert(`Успешно загружено препаратов: ${uploadedSlides.length}`);
     }
+  };
+
+  // Non-blocking background upload used by the "Загрузить ещё" button in
+  // the side panel. Each file gets its own row with progress, and the
+  // teacher can keep switching slides / drawing regions while the upload
+  // is in flight. The newly uploaded slide becomes the active one as soon
+  // as the server accepts it.
+  const startBackgroundUpload = (files: FileList | File[]) => {
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+
+    // Reserve an entry per file so the user sees them appear immediately.
+    const initial: IncomingUpload[] = arr.map((f) => ({
+      id: `${f.name}-${f.size}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: f.name,
+      progress: 0,
+      status: "uploading",
+    }));
+    setIncomingUploads((prev) => [...initial, ...prev]);
+
+    arr.forEach((file, idx) => {
+      const entryId = initial[idx].id;
+      const examTitle = file.name.replace(/\.[^/.]+$/, "");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("title", examTitle);
+      formData.append("description", `Препарат для экзамена: ${file.name}`);
+      formData.append("course_id", "11111111-1111-1111-1111-111111111111");
+
+      axios
+        .post("/api/v1/slides/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            const percent = progressEvent.total
+              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              : 0;
+            setIncomingUploads((prev) =>
+              prev.map((u) => (u.id === entryId ? { ...u, progress: percent } : u))
+            );
+          },
+        })
+        .then((res) => {
+          const slide = res.data;
+          setIncomingUploads((prev) =>
+            prev.map((u) => (u.id === entryId ? { ...u, status: "done", slideId: slide.id, progress: 100 } : u))
+          );
+          setExamSlides((prev) => {
+            if (prev.some((p) => p.id === slide.id)) return prev;
+            return [...prev, slide];
+          });
+          // Make the freshly uploaded slide the active one so the
+          // teacher can start drawing regions on it right away.
+          // This is non-blocking: the user can override by clicking
+          // another slide card.
+          setUploadedSlideId(slide.id);
+          setSlideTitle(slide.title);
+          // Remove the "uploading" row after a short delay so the user
+          // sees the success state for a moment.
+          setTimeout(() => {
+            setIncomingUploads((prev) => prev.filter((u) => u.id !== entryId));
+          }, 1500);
+        })
+        .catch((err) => {
+          console.error("Background slide upload failed:", err);
+          setIncomingUploads((prev) =>
+            prev.map((u) => (u.id === entryId ? { ...u, status: "error" } : u))
+          );
+          // Keep the error row visible so the teacher can see it
+          // failed; auto-clear after a few seconds.
+          setTimeout(() => {
+            setIncomingUploads((prev) => prev.filter((u) => u.id !== entryId));
+          }, 4000);
+        });
+    });
+  };
+
+  const handleBackgroundFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      startBackgroundUpload(e.target.files);
+    }
+    // Reset so picking the same file again still fires onChange.
+    e.target.value = "";
   };
 
   const handleDeleteRegion = async (id: string) => {
@@ -1978,16 +2074,111 @@ ID Экзамена: ${selectedExamForReport.id}
                 }}
               >
                 <Box sx={{ p: 2.5, borderBottom: "1px solid #e2e8f0", bgcolor: "#ffffff" }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                    Препараты экзамена ({examSlides.length})
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 0.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                      Препараты экзамена ({examSlides.length})
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<FileUploadIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => backgroundUploadInputRef.current?.click()}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 700,
+                        fontSize: "0.7rem",
+                        borderRadius: "6px",
+                        borderColor: "#cbd5e1",
+                        color: "#0040b0",
+                        py: 0.4,
+                        px: 1,
+                        "&:hover": { borderColor: "#0040b0", bgcolor: "rgba(0,64,176,0.04)" }
+                      }}
+                    >
+                      Загрузить ещё
+                    </Button>
+                    {/*
+                      Hidden file input for the "Загрузить ещё" button.
+                      The teacher can keep drawing / switching slides while
+                      the upload runs in the background; the result row
+                      appears in the list below with live progress.
+                    */}
+                    <input
+                      ref={backgroundUploadInputRef}
+                      type="file"
+                      multiple
+                      accept=".svs,.tiff,.tif,.ndpi,.vms,.bif,.mrxs,.png,.jpg,.jpeg,.webp,.bmp,.gif"
+                      style={{ display: "none" }}
+                      onChange={handleBackgroundFileSelect}
+                    />
+                  </Box>
                   <Typography variant="caption" sx={{ color: "#64748b", display: "block", mt: 0.5 }}>
-                    Выберите файл для создания и привязки вопросов.
+                    Выберите файл для создания и привязки вопросов. Можно добавлять препараты прямо во время работы.
                   </Typography>
                 </Box>
 
                 <Box sx={{ p: 2, flexGrow: 1, overflowY: "auto" }}>
                   <Stack spacing={2}>
+                    {incomingUploads.map((u) => (
+                      <Card
+                        key={u.id}
+                        sx={{
+                          border: "1px solid",
+                          borderColor: u.status === "error" ? "#fecaca" : "#bfdbfe",
+                          boxShadow: "none",
+                          borderRadius: "10px",
+                          bgcolor: u.status === "error" ? "#fef2f2" : "#eff6ff",
+                        }}
+                      >
+                        <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            {u.status === "uploading" && (
+                              <CircularProgress size={14} sx={{ color: "#0040b0" }} />
+                            )}
+                            {u.status === "done" && (
+                              <CheckCircleOutlineIcon sx={{ fontSize: 16, color: "#10b981" }} />
+                            )}
+                            {u.status === "error" && (
+                              <WarningAmberIcon sx={{ fontSize: 16, color: "#ef4444" }} />
+                            )}
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: 700,
+                                color: "#0f172a",
+                                fontSize: "0.78rem",
+                                flexGrow: 1,
+                                textOverflow: "ellipsis",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                              }}
+                              title={u.name}
+                            >
+                              {u.name}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontWeight: 700,
+                                color: u.status === "error" ? "#b91c1c" : "#0040b0",
+                                fontSize: "0.7rem",
+                              }}
+                            >
+                              {u.status === "uploading" && `${u.progress}%`}
+                              {u.status === "done" && "Готово"}
+                              {u.status === "error" && "Ошибка"}
+                            </Typography>
+                          </Box>
+                          {u.status === "uploading" && (
+                            <LinearProgress
+                              variant="determinate"
+                              value={u.progress}
+                              sx={{ mt: 1, height: 4, borderRadius: "2px" }}
+                            />
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
                     {examSlides.map((slide, idx) => {
                       const isActive = slide.id === uploadedSlideId;
                       const imgUrl = cardImages[idx % cardImages.length];

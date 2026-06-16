@@ -211,6 +211,29 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
 
       <DialogContent sx={{ mt: 2 }}>
         <Box display="flex" flexDirection="column" gap={2.5}>
+          {/*
+            Annotation-only shapes (line / arrow / text) don't have a
+            clickable area, so the question dialog is hidden and we
+            explain that to the teacher. Same for the right-side content
+            type toggle - those shapes are explanation-only by design.
+          */}
+          {(shapeType === "line" || shapeType === "arrow" || shapeType === "text") && (
+            <Box
+              sx={{
+                px: 2, py: 1.5, borderRadius: "8px",
+                bgcolor: "rgba(0,64,176,0.05)",
+                border: "1px solid rgba(0,64,176,0.15)",
+              }}
+            >
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "primary.main", display: "block" }}>
+                Аннотация
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#475569" }}>
+                Линии, стрелки и текстовые метки — это подписи/пояснения на препарате. Вопросы к ним не привязываются.
+              </Typography>
+            </Box>
+          )}
+
           {}
           <TextField
             label="Название области (метка)"

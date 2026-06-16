@@ -496,6 +496,13 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
                   setIsDrawing(false);
                   setCurrentPoints([]);
                   setActiveDrawingShape(null);
+                  // Line / arrow / text are annotation-only shapes — they
+                  // don't have a clickable area for an answer, so opening
+                  // the question dialog after drawing them is wrong.
+                  // Force the content type to explanation.
+                  if (value === "line" || value === "arrow" || value === "text") {
+                    setContentType("explanation");
+                  }
                 }
               }}
               size="small"
