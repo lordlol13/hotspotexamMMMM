@@ -16,6 +16,7 @@ class SlideResponse(BaseModel):
     title: str
     description: Optional[str] = None
     original_filename: str
+    content_sha256: Optional[str] = None
     width: Optional[int] = None
     height: Optional[int] = None
     mpp: Optional[float] = None

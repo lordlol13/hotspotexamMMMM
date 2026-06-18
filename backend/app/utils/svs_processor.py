@@ -18,10 +18,6 @@ except ImportError:
 logger = logging.getLogger("app.utils.svs_processor")
 
 class PillowDeepZoomGenerator:
-    """
-    DZI Tile Generator mimicking OpenSlide's DeepZoomGenerator interface.
-    Used as a fallback for flat images (PNG, JPG, WEBP, non-pyramidal TIFF).
-    """
     def __init__(self, image: Image.Image, tile_size: int = 256, overlap: int = 1):
         self.image = image
         self.tile_size = tile_size
@@ -80,10 +76,6 @@ class PillowDeepZoomGenerator:
         return cropped
 
 class UnifiedSlideProcessor:
-    """
-    Unified slide interface that handles both OpenSlide SVS/TIFF formats
-    and Pillow standard image formats (PNG, JPG, WEBP).
-    """
     def __init__(self, file_path: str, tile_size: int = 256, overlap: int = 1):
         self.file_path = file_path
         self.tile_size = tile_size
@@ -128,7 +120,6 @@ class UnifiedSlideProcessor:
 
     @property
     def mpp(self) -> Optional[float]:
-        """Get microns per pixel (MPP) if available."""
         if self.slide:
 
             mpp_x = self.slide.properties.get(openslide.PROPERTY_NAME_MPP_X)
@@ -138,7 +129,6 @@ class UnifiedSlideProcessor:
 
     @property
     def objective_power(self) -> Optional[float]:
-        """Get objective power magnification if available."""
         if self.slide:
             mag = self.slide.properties.get(openslide.PROPERTY_NAME_OBJECTIVE_POWER)
             if mag:
@@ -146,9 +136,6 @@ class UnifiedSlideProcessor:
         return None
 
     def get_dzi_xml(self) -> str:
-        """
-        Generate DZI XML descriptor for OpenSeadragon.
-        """
         return f"""<?xml version="1.0" encoding="utf-8"?>
 <Image xmlns="http://schemas.microsoft.com/deepzoom/2008"
        TileSize="{self.tile_size}"
@@ -158,14 +145,9 @@ class UnifiedSlideProcessor:
 </Image>"""
 
     def get_tile(self, level: int, col: int, row: int) -> Image.Image:
-        """Get tile image at specified zoom level and coordinates."""
         return self.dz.get_tile(level, (col, row))
 
     def generate_thumbnail(self, max_width: int = 1024) -> Image.Image:
-        """
-        Generate a downscaled thumbnail of the slide.
-        For large SVS, fetches from low resolution levels to avoid RAM overhead.
-        """
         if self.slide:
 
             aspect = self.width / self.height

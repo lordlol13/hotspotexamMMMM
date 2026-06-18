@@ -18,11 +18,6 @@ logger = logging.getLogger("app.services.auth")
 class AuthService:
     @staticmethod
     def register_student(db: Session, schema: StudentRegister) -> User:
-        """
-        Register a new student.
-        Creates a User identity record and a linked Student profile.
-        If a group_name is provided, links or creates the group.
-        """
 
         if db.query(User).filter(User.email == schema.email).first():
             raise BadRequestException("Email already registered")
@@ -90,10 +85,6 @@ class AuthService:
 
     @staticmethod
     def register_teacher(db: Session, schema: TeacherRegister) -> User:
-        """
-        Register a new teacher.
-        Creates a User identity record and a linked Teacher profile.
-        """
         if db.query(User).filter(User.email == schema.email).first():
             raise BadRequestException("Email already registered")
 
@@ -139,9 +130,6 @@ class AuthService:
 
     @staticmethod
     def authenticate_user(db: Session, username_or_email: str, password: str) -> User:
-        """
-        Authenticate a user by username or email.
-        """
         user = db.query(User).filter(
             (func.lower(User.username) == func.lower(username_or_email)) |
             (func.lower(User.email) == func.lower(username_or_email))
@@ -163,9 +151,6 @@ class AuthService:
 
     @staticmethod
     def verify_email(db: Session, token: str) -> bool:
-        """
-        Confirm user email verification using the sent token.
-        """
         user = db.query(User).filter(User.verification_token == token).first()
         if not user:
             raise BadRequestException("Invalid or expired verification token")
@@ -177,9 +162,6 @@ class AuthService:
 
     @staticmethod
     def request_password_reset(db: Session, email: str) -> str:
-        """
-        Generate password reset token and send reset link.
-        """
         user = db.query(User).filter(User.email == email).first()
         if not user:
             return ""
@@ -202,9 +184,6 @@ class AuthService:
 
     @staticmethod
     def confirm_password_reset(db: Session, token: str, new_password: str) -> bool:
-        """
-        Validate reset token and update password.
-        """
         user = db.query(User).filter(User.reset_token == token).first()
         if not user:
             raise BadRequestException("Invalid or expired password reset token")

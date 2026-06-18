@@ -7,25 +7,19 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Add the parent directory of alembic/ to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# This is the Alembic Config object
 config = context.config
 
-# Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import Base from app.models to get target metadata
 from app.models import Base
 target_metadata = Base.metadata
 
-# Import dynamic settings
 from app.config import settings
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
     url = settings.DATABASE_URL
     context.configure(
         url=url,
@@ -39,7 +33,6 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section) or {}
     configuration["sqlalchemy.url"] = settings.DATABASE_URL
     

@@ -249,7 +249,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         }}
       >
         <Stack direction={{ xs: "column", sm: "row" }} divider={<Divider orientation="vertical" flexItem />}>
-          {}
           <Box p={2.5} width={220} display="flex" flexDirection="column" gap={2.5} bgcolor="#f8fafc">
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
@@ -320,9 +319,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             </Box>
           </Box>
 
-          {}
           <Box p={2.5} width={340}>
-            {}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <IconButton onClick={handlePrevMonth} size="small" sx={{ border: "1px solid #e2e8f0" }}>
                 <NavigateBeforeIcon />
@@ -335,7 +332,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               </IconButton>
             </Box>
 
-            {}
             <Grid container spacing={0} mb={1}>
               {WEEKDAYS.map((wd, index) => (
                 <Grid item xs={1.71} key={wd} textAlign="center">
@@ -346,7 +342,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               ))}
             </Grid>
 
-            {}
             <Grid container spacing={0}>
               {calendarDays.map((day, idx) => {
                 const { isStart, isEnd, isInRange, isGreyed } = getDayStatus(day);
@@ -364,7 +359,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       alignItems: "center"
                     }}
                   >
-                    {}
                     {isInRange && (
                       <Box
                         sx={{
@@ -379,7 +373,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       />
                     )}
 
-                    {}
                     {isStart && endDateStr && (
                       <Box
                         sx={{
@@ -394,7 +387,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       />
                     )}
 
-                    {}
                     {isEnd && startDateStr && (
                       <Box
                         sx={{
@@ -409,7 +401,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       />
                     )}
 
-                    {}
                     <Button
                       onClick={() => handleDayClick(day)}
                       sx={{
@@ -441,7 +432,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               })}
             </Grid>
 
-            {}
             <Box mt={3} pt={2} display="flex" justifyContent="space-between" borderTop="1px solid #e2e8f0">
               <Button
                 onClick={handleClear}

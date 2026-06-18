@@ -3,7 +3,7 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -15,8 +15,6 @@ from app.config import settings
 from app.core.init_db import init_db
 from app.core.logging import configure_logging
 from app.database import engine
-from app.dependencies import RoleChecker
-from app.models.enums import UserRole
 
 configure_logging(settings.LOG_LEVEL)
 settings.validate_production()
@@ -105,7 +103,3 @@ def readiness_check():
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
     return {"status": "ready"}
-
-@app.get("/api/v1/test-teacher-only")
-def test_teacher_only(current_user=Depends(RoleChecker([UserRole.TEACHER]))):
-    return {"message": "You are a teacher!", "user": current_user.email}

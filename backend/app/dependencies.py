@@ -20,9 +20,6 @@ def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ) -> User:
-    """
-    Extract token from headers, verify it, and return the corresponding User.
-    """
     payload = verify_token(token, expected_type="access")
     if not payload:
         raise AuthException("Could not validate credentials")
@@ -48,7 +45,6 @@ def get_current_user(
 def get_current_active_user(
     current_user: User = Depends(get_current_user)
 ) -> User:
-    """Ensure the user is active."""
     if not current_user.is_active:
         raise ForbiddenException("User is inactive")
     return current_user
@@ -56,15 +52,11 @@ def get_current_active_user(
 def get_current_verified_user(
     current_user: User = Depends(get_current_user)
 ) -> User:
-    """Ensure the user has verified their email address."""
     if not current_user.is_verified:
         raise ForbiddenException("Email address is not verified")
     return current_user
 
 class RoleChecker:
-    """
-    Dependency to enforce role-based access control (RBAC).
-    """
     def __init__(self, allowed_roles: List[UserRole]):
         self.allowed_roles = allowed_roles
 

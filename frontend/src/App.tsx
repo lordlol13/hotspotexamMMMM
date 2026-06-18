@@ -48,37 +48,6 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-axios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes("/auth/refresh")) {
-      originalRequest._retry = true;
-      const refreshToken = localStorage.getItem("refresh_token");
-      if (refreshToken) {
-        try {
-          const refreshRes = await axios.post("/api/v1/auth/refresh", { refresh_token: refreshToken });
-          const data = refreshRes.data;
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
-
-          axios.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
-          originalRequest.headers["Authorization"] = `Bearer ${data.access_token}`;
-
-          return axios(originalRequest);
-        } catch (refreshError) {
-          console.error("Token refresh interceptor failed:", refreshError);
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-          delete axios.defaults.headers.common["Authorization"];
-          window.location.href = "/";
-        }
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
 const SlideViewPage = lazy(() => import("./pages/slides/SlideViewPage"));
 const StudentDashboard = lazy(() => import("./pages/dashboard/StudentDashboard"));
 const TeacherDashboard = lazy(() => import("./pages/dashboard/TeacherDashboard"));
@@ -149,8 +118,8 @@ export const useAuth = () => {
 
 const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToRegister }) => {
   const { login } = useAuth();
-  const [email, setEmail] = useState("admin@hotspot.com");
-  const [password, setPassword] = useState("admin12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -173,7 +142,6 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
 
   return (
     <Box sx={{ display: "flex", width: "100vw", height: "100vh", bgcolor: "#ffffff" }}>
-      {}
       <Box
         sx={{
           display: { xs: "none", md: "flex" },
@@ -248,7 +216,6 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
         <Box sx={{ zIndex: 2 }} />
       </Box>
 
-      {}
       <Box
         sx={{
           width: { xs: "100%", md: "50%" },
@@ -262,7 +229,6 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
         }}
       >
         <Box sx={{ width: "100%", maxWidth: 380 }}>
-          {}
           <Box
             sx={{
               display: "flex",
@@ -400,18 +366,6 @@ const LoginPage: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToReg
             </Button>
           </form>
 
-          <Typography
-            variant="caption"
-            sx={{
-              display: "block",
-              textAlign: "center",
-              mt: 4,
-              color: "#64748b",
-              fontFamily: "monospace",
-            }}
-          >
-            Демо-админ: admin@hotspot.com / admin12345
-          </Typography>
         </Box>
       </Box>
     </Box>
@@ -483,7 +437,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
 
   return (
     <Box sx={{ display: "flex", width: "100vw", height: "100vh", bgcolor: "#ffffff" }}>
-      {}
       <Box
         sx={{
           display: { xs: "none", md: "flex" },
@@ -558,7 +511,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
         <Box sx={{ zIndex: 2 }} />
       </Box>
 
-      {}
       <Box
         sx={{
           width: { xs: "100%", md: "50%" },
@@ -573,7 +525,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
         }}
       >
         <Box sx={{ width: "100%", maxWidth: 380, py: 4 }}>
-          {}
           <Box
             sx={{
               display: "flex",
@@ -621,7 +572,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </Alert>
             )}
 
-            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 1 }}
@@ -671,7 +621,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </Button>
             </Box>
 
-            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -689,7 +638,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               sx={{ mb: 2.5 }}
             />
 
-            {}
             {role === "student" ? (
               <>
                 <Box sx={{ display: "flex", gap: 2, mb: 2.5 }}>
@@ -738,7 +686,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
                   </Box>
                 </Box>
 
-                {}
                 <Typography
                   variant="body2"
                   sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -758,7 +705,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </>
             ) : (
               <>
-                {}
                 <Typography
                   variant="body2"
                   sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -778,7 +724,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               </>
             )}
 
-            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -796,7 +741,6 @@ const RegisterPage: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLog
               sx={{ mb: 2.5 }}
             />
 
-            {}
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8 }}
@@ -1030,7 +974,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         }
       }}
     >
-      {}
       <Box
         sx={{
           p: 3,
@@ -1102,7 +1045,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
         {success && <Alert severity="success" sx={{ mb: 3, borderRadius: "8px" }}>{success}</Alert>}
 
         <Grid container spacing={4}>
-          {}
           <Grid item xs={12} md={7} component="form" onSubmit={handleProfileSubmit}>
             <Typography variant="subtitle2" sx={{ mb: 2.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
               {language === "ru" ? "Личные данные" : "Personal Information"}
@@ -1233,15 +1175,12 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
             </Box>
           </Grid>
 
-          {}
           <Grid item xs={12} md={5} sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
                 {language === "ru" ? "Настройки интерфейса" : "Preferences"}
               </Typography>
 
-              {}
               <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
                 <Button
                   fullWidth
@@ -1277,7 +1216,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
                 </Button>
               </Box>
 
-              {}
               <Box sx={{ display: "flex", gap: 1.5 }}>
                 <Button
                   fullWidth
@@ -1314,7 +1252,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
               </Box>
             </Box>
 
-            {}
             {user?.role === "student" && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
@@ -1351,7 +1288,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
               </Box>
             )}
 
-            {}
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, color: "text.secondary" }}>
                 {language === "ru" ? "Безопасность и аккаунт" : "Account Controls"}
@@ -1375,7 +1311,6 @@ const ProfileSettingsDialog: React.FC<ProfileSettingsDialogProps> = ({ open, onC
                   {language === "ru" ? "Сменить пароль" : "Change Password"}
                 </Button>
 
-                {}
                 <Collapse in={showPasswordChange}>
                   <Box component="form" onSubmit={handlePasswordSubmit} sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 1.5, p: 2, border: "1px dashed", borderColor: "divider", borderRadius: "8px" }}>
                     <TextField
@@ -1529,7 +1464,6 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
         </Box>
       ) : profileUser ? (
         <Box>
-          {}
           <Box
             sx={{
               p: 3,
@@ -1597,7 +1531,6 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
             )}
 
             <Grid container spacing={2}>
-              {}
               <Grid item xs={12}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block" }}>
                   Email
@@ -1607,7 +1540,6 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 </Typography>
               </Grid>
 
-              {}
               <Grid item xs={12} sm={6}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block" }}>
                   {language === "ru" ? "Телефон" : "Phone"}
@@ -1617,7 +1549,6 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 </Typography>
               </Grid>
 
-              {}
               <Grid item xs={12} sm={6}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, display: "block" }}>
                   {language === "ru" ? "Адрес" : "Address"}
@@ -1627,7 +1558,6 @@ export const UserProfileDialog: React.FC<UserProfileDialogProps> = ({ userId, op
                 </Typography>
               </Grid>
 
-              {}
               {profileUser.role === "student" && profileUser.student_profile && (
                 <>
                   <Grid item xs={12} sm={6}>
@@ -1762,7 +1692,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      {}
       <AppBar
         position="fixed"
         elevation={0}
@@ -1774,7 +1703,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         }}
       >
         <Toolbar sx={{ px: { xs: 2, sm: 4 }, height: 70, display: "flex", justifyContent: "space-between" }}>
-          {}
           <Box
             component={Link}
             to="/dashboard"
@@ -1786,7 +1714,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </Typography>
           </Box>
 
-          {}
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 3.5 }}>
             {menuItems.map((item, index) => {
               const isActive = getActiveTab() === index;
@@ -1816,7 +1743,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             })}
           </Box>
 
-          {}
           {user && (
             <Box
               onClick={handleProfileClick}
@@ -1858,7 +1784,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {}
       <Box
         component="main"
         sx={{

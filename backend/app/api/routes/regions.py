@@ -23,10 +23,6 @@ def create_region(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Create a new region of interest on a slide.
-    Role: Teacher or Admin.
-    """
     AccessService.require_slide_manager(db, schema.slide_id, current_user)
     return RegionService.create_region(db, schema, current_user.id)
 
@@ -36,7 +32,6 @@ def list_slide_regions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all regions defined for a specific slide."""
     return RegionService.list_regions_by_slide(db, slide_id)
 
 @router.get("/{region_id}", response_model=RegionResponse)
@@ -45,7 +40,6 @@ def get_region(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get specific region metadata and configuration."""
     return RegionService.get_region(db, region_id)
 
 @router.put("/{region_id}", response_model=RegionResponse)
@@ -55,10 +49,6 @@ def update_region(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Update coordinates or content configuration for a slide region.
-    Role: Teacher or Admin.
-    """
     region = RegionService.get_region(db, region_id)
     AccessService.require_slide_manager(db, region.slide_id, current_user)
     return RegionService.update_region(db, region_id, schema)
@@ -69,10 +59,6 @@ def delete_region(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Delete a slide region.
-    Role: Teacher or Admin.
-    """
     region = RegionService.get_region(db, region_id)
     AccessService.require_slide_manager(db, region.slide_id, current_user)
     RegionService.delete_region(db, region_id)
@@ -83,9 +69,6 @@ def upload_media(
     file: UploadFile = File(...),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Upload a media file (image/video) for a region explanation/question.
-    """
     import os
     media_dir = os.path.join(settings.UPLOAD_DIR, "media")
     os.makedirs(media_dir, exist_ok=True)
@@ -116,9 +99,6 @@ def upload_media(
 
 @router.get("/media/{filename}")
 def get_media_file(filename: str, current_user: User = Depends(get_current_active_user)):
-    """
-    Serve uploaded media files.
-    """
     import os
     safe_filename = os.path.basename(filename)
     if safe_filename != filename:

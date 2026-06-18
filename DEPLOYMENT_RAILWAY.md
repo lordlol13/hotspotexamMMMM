@@ -1,48 +1,49 @@
-# Деплой проекта на Railway
+# Деплой Railway и Vercel
 
-Проект (Dockerfiles, Nginx конфигурации, миграции БД) **полностью готов** к деплою на Railway. Вся архитектура разделена на микросервисы, которые отлично ложатся на инфраструктуру Railway.
+## Backend на Railway
 
-Следуйте этой пошаговой инструкции для успешного запуска проекта:
+1. Создайте PostgreSQL и backend-сервис из этого репозитория.
+2. Укажите Root Directory: `/backend`.
+3. Railway использует `backend/Dockerfile`, выполняет Alembic-миграции и запускает FastAPI.
+4. Подключите Railway Volume с Mount Path `/app/uploads`. Без volume загруженные препараты будут удаляться при новом деплое.
+5. Добавьте переменные из `.env.example`:
 
-## Шаг 1: Создание проекта и Базы Данных
-1. Зайдите в панель управления [Railway](https://railway.app/).
-2. Нажмите **New Project** -> **Provision PostgreSQL**.
-3. Railway создаст базу данных и автоматически сгенерирует переменные окружения, включая `DATABASE_URL`.
+```env
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+JWT_SECRET=<случайная строка длиной от 32 символов>
+ENVIRONMENT=production
+LOG_LEVEL=INFO
+ENABLE_DOCS=false
+ALLOW_TEACHER_REGISTRATION=false
+ADMIN_EMAIL=<email администратора>
+ADMIN_USERNAME=<логин администратора>
+ADMIN_PASSWORD=<сложный пароль>
+ADMIN_FULL_NAME=<имя администратора>
+BACKEND_CORS_ORIGINS=https://<frontend-domain>
+FRONTEND_URL=https://<frontend-domain>
+UPLOAD_DIR=/app/uploads
+WEB_CONCURRENCY=2
+```
 
-## Шаг 2: Деплой Backend (FastAPI)
-1. В том же проекте Railway нажмите **New** -> **GitHub Repo** (и выберите ваш репозиторий).
-2. Сразу после добавления сервиса, зайдите в его **Settings** (Настройки).
-3. Найдите секцию **Service** -> **Root Directory** и укажите `/backend`.
-4. В секции **Build** убедитесь, что выбран **Dockerfile** (Railway сам подхватит `/backend/Dockerfile`).
-5. Перейдите во вкладку **Variables** (Переменные) этого сервиса и добавьте следующие переменные:
-   - `DATABASE_URL` (Нажмите "Add Reference" и выберите переменную из PostgreSQL, которую вы создали на Шаге 1).
-   - `JWT_SECRET` (Сгенерируйте длинную случайную строку).
-   - `ADMIN_EMAIL` (Email администратора, например, `admin@emergent.edu`).
-   - `ADMIN_USERNAME` (например, `admin`).
-   - `ADMIN_PASSWORD` (например, `admin123`).
-   - `ADMIN_FULL_NAME` (например, `System Admin`).
-   - `ENVIRONMENT` = `production`
-   - `BACKEND_CORS_ORIGINS` (пока оставьте пустым, мы добавим сюда домен фронтенда позже, или напишите `*` для тестов).
-6. Перейдите во вкладку **Networking** и нажмите **Generate Domain**. Railway выдаст вам публичный URL для бэкенда (например, `https://backend-production.up.railway.app`).
-   - *Скопируйте этот URL, он понадобится для фронтенда.*
+6. Создайте публичный домен. Проверки `/health` и `/ready` должны возвращать HTTP 200.
 
-## Шаг 3: Деплой Frontend (React / Nginx)
-1. В том же проекте Railway нажмите **New** -> **GitHub Repo** (и снова выберите ваш репозиторий).
-2. Зайдите в **Settings** (Настройки) нового сервиса.
-3. В секции **Service** -> **Root Directory** укажите `/frontend`.
-4. В секции **Build** убедитесь, что выбран **Dockerfile** (Railway подхватит `/frontend/Dockerfile`).
-5. Перейдите во вкладку **Variables** (Переменные) и добавьте:
-   - `BACKEND_URL` = Вставьте домен вашего бэкенда из Шага 2 (например, `https://backend-production.up.railway.app`). *Важно: без слеша на конце!*
-6. Перейдите во вкладку **Networking** и нажмите **Generate Domain**. Railway выдаст вам публичный URL для фронтенда (например, `https://hotspot-frontend.up.railway.app`).
+## Frontend на Vercel
 
-## Шаг 4: Настройка CORS на Backend
-1. Вернитесь в сервис **Backend** -> **Variables**.
-2. Измените переменную `BACKEND_CORS_ORIGINS`, добавив туда сгенерированный URL фронтенда (например, `https://hotspot-frontend.up.railway.app`).
+1. Импортируйте репозиторий и укажите Root Directory: `frontend`.
+2. Framework Preset: Vite.
+3. Добавьте переменную для Production и Preview:
 
-## Готово! 🎉
-- Ваш фронтенд будет доступен по своему URL.
-- Запросы `/api/*` будут автоматически проксироваться Nginx'ом на ваш бэкенд.
-- Миграции Alembic для базы данных выполняются автоматически при каждом деплое бэкенда (согласно `CMD` в `backend/Dockerfile`).
+```env
+VITE_BACKEND_URL=https://<backend-domain>
+```
 
----
-**Примечание:** Корневые файлы `railway.json` и `railway.toml` были удалены, так как они могут сбивать Railway с толку при деплое монорепозитория. Теперь каждый сервис (backend и frontend) имеет свои локальные `railway.json`, которые Railway прочитает, когда вы укажете правильный `Root Directory`.
+4. Выполните deploy.
+5. Добавьте production-домен Vercel в `BACKEND_CORS_ORIGINS` Railway и перезапустите backend.
+
+## Frontend на Railway
+
+1. Создайте второй сервис с Root Directory `/frontend`.
+2. Добавьте `BACKEND_URL=https://<backend-domain>`.
+3. Создайте публичный домен frontend и добавьте его в `BACKEND_CORS_ORIGINS` backend-сервиса.
+
+Не используйте `*` для CORS и не храните секреты в репозитории.

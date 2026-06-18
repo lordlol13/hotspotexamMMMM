@@ -46,4 +46,3 @@ class RegionContentType(str, enum.Enum):
     PDF = "pdf"
     LINK = "link"
     QUESTION_POINT = "question_point"
-

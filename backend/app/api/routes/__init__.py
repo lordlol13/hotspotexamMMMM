@@ -6,6 +6,7 @@ from app.api.routes.exams import router as exams_router
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.groups import router as groups_router
 from app.api.routes.students import router as students_router
+from app.api.routes.courses import router as courses_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
@@ -15,3 +16,4 @@ api_router.include_router(exams_router, prefix="/exams", tags=["Exam Engine"])
 api_router.include_router(analytics_router, prefix="/analytics", tags=["Power BI Analytics"])
 api_router.include_router(groups_router, prefix="/groups", tags=["Groups"])
 api_router.include_router(students_router, prefix="/students", tags=["Students"])
+api_router.include_router(courses_router, prefix="/courses", tags=["Courses"])

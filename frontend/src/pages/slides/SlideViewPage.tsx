@@ -22,7 +22,6 @@ export const SlideViewPage: React.FC = () => {
 
   return (
     <Box display="flex" flexDirection="column" width="100vw" height="100vh" bgcolor="#f8fafc">
-      {}
       <AppBar position="static" sx={{ bgcolor: "#ffffff", borderBottom: "1px solid #e2e8f0" }} elevation={0}>
         <Toolbar variant="dense" sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box display="flex" alignItems="center">
@@ -39,7 +38,6 @@ export const SlideViewPage: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {}
       <Box flexGrow={1} position="relative">
         <SlideViewer slideId={slideId} isTeacher={isTeacher} />
       </Box>

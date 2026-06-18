@@ -88,10 +88,6 @@ class ExamService:
 
     @classmethod
     def start_attempt(cls, db: Session, exam_id: uuid.UUID, student_id: uuid.UUID) -> ExamAttempt:
-        """
-        Initiate an exam attempt session.
-        Enforces attempt limits and checks for active teacher-granted retakes.
-        """
         exam = db.query(Exam).filter(Exam.id == exam_id).with_for_update().first()
         if not exam:
             raise NotFoundException("Exam not found")
@@ -143,9 +139,6 @@ class ExamService:
 
     @classmethod
     def submit_attempt(cls, db: Session, attempt_id: uuid.UUID, payload: ExamAttemptSubmit) -> ExamAttempt:
-        """
-        Submit exam answers, calculate percentage score, and run auto-grading.
-        """
         attempt = db.query(ExamAttempt).filter(ExamAttempt.id == attempt_id).first()
         if not attempt:
             raise NotFoundException("Exam attempt not found")
@@ -319,9 +312,6 @@ class ExamService:
 
     @staticmethod
     def grant_retake(db: Session, schema: ExamRetakeCreate, granter_id: uuid.UUID) -> ExamRetake:
-        """
-        Authorize a student to retake an exam.
-        """
 
         active_retake = db.query(ExamRetake).filter(
             ExamRetake.exam_id == schema.exam_id,
@@ -347,9 +337,6 @@ class ExamService:
 
     @staticmethod
     def get_exams_by_course(db: Session, course_id: uuid.UUID) -> List[Exam]:
-        """
-        Get all exams for a specific course.
-        """
         return (
             db.query(Exam)
             .options(
@@ -363,13 +350,6 @@ class ExamService:
 
     @staticmethod
     def get_exams_for_student(db: Session, course_id: uuid.UUID, student_id: uuid.UUID) -> List[Exam]:
-        """
-        Get exams for a course that are visible to a specific student.
-        Visible if:
-        1. No groups and no students are assigned to the exam (public to course)
-        2. Student is directly assigned to the exam
-        3. Student's group is assigned to the exam
-        """
         from app.models.user import Student
         student = db.query(Student).filter(Student.id == student_id).first()
         group_id = student.group_id if student else None
@@ -406,9 +386,6 @@ class ExamService:
 
     @staticmethod
     def can_student_access_exam(db: Session, exam_id: uuid.UUID, student_id: uuid.UUID) -> bool:
-        """
-        Check if a student can access/take a specific exam.
-        """
         exam = (
             db.query(Exam)
             .options(
@@ -463,18 +440,12 @@ class ExamService:
 
     @classmethod
     def delete_exam(cls, db: Session, exam_id: uuid.UUID) -> None:
-        """
-        Delete an exam from database.
-        """
         exam = cls.get_exam(db, exam_id)
         db.delete(exam)
         db.commit()
 
     @classmethod
     def clear_questions(cls, db: Session, exam_id: uuid.UUID) -> None:
-        """
-        Delete all questions for a specific exam.
-        """
         from app.models.exam import ExamQuestion
         db.query(ExamQuestion).filter(ExamQuestion.exam_id == exam_id).delete()
         db.commit()

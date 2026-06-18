@@ -104,15 +104,10 @@ export const ExamListPage: React.FC = () => {
   const [examSlides, setExamSlides] = useState<any[]>([]);
   const [selectedExistingSlideIds, setSelectedExistingSlideIds] = useState<string[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [orderedRegionIds, setOrderedRegionIds] = useState<string[]>([]);
+  const [, setOrderedRegionIds] = useState<string[]>([]);
   const [flaggedRegionIds, setFlaggedRegionIds] = useState<string[]>([]);
   const [editingExamQuestions, setEditingExamQuestions] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (orderedRegionIds.length > 0) {
-      console.log("Updated regions sorting order:", orderedRegionIds);
-    }
-  }, [orderedRegionIds]);
+  const [courseId, setCourseId] = useState<string | null>(null);
 
   const cardImages = [
     "https://images.unsplash.com/photo-1530026405186-ed1ea0ac7a63?q=80&w=600&auto=format&fit=crop",
@@ -124,12 +119,15 @@ export const ExamListPage: React.FC = () => {
       if (!silent) setLoading(true);
       setError(null);
 
-      const examsRes = await axios.get("/api/v1/exams/?course_id=11111111-1111-1111-1111-111111111111");
+      const courseRes = await axios.get("/api/v1/courses/primary");
+      const activeCourseId = courseRes.data.id as string;
+      setCourseId(activeCourseId);
+      const examsRes = await axios.get("/api/v1/exams/", { params: { course_id: activeCourseId } });
       setExams(examsRes.data);
 
       if (user.role === "teacher" || user.role === "admin") {
         try {
-          const slidesRes = await axios.get("/api/v1/slides/course/11111111-1111-1111-1111-111111111111");
+          const slidesRes = await axios.get(`/api/v1/slides/course/${activeCourseId}`);
           setExistingSlides(slidesRes.data);
         } catch (e) {
           console.error("Failed to load existing slides", e);
@@ -139,33 +137,11 @@ export const ExamListPage: React.FC = () => {
         setAttempts(analyticsRes.data.exam_history || []);
       }
     } catch (err: any) {
-      console.error(err);
       if (!silent) {
-        setError("Не удалось загрузить параметры экзаменов с сервера.");
-        setExams([
-          {
-            id: "6e94e3a4-0bc5-4caf-b783-e256f3fda94b",
-            title: "Строение клетки",
-            description: "Определите органоиды клетки, нажимая на соответствующие области изображения.",
-            course_id: "11111111-1111-1111-1111-111111111111",
-            duration_minutes: 15,
-            passing_score: 75.0,
-            is_active: true,
-            attempt_limit: 1,
-            question_count: 4
-          },
-          {
-            id: "55555555-5555-5555-5555-555555555555",
-            title: "Эпителиальные ткани",
-            description: "Контрольное оценивание по классификации и микроструктуре эпителиальных тканей.",
-            course_id: "11111111-1111-1111-1111-111111111111",
-            duration_minutes: 30,
-            passing_score: 60.0,
-            is_active: true,
-            attempt_limit: 2,
-            question_count: 8
-          }
-        ]);
+        setError(err?.response?.status === 404
+          ? "Для пользователя не назначен активный курс."
+          : "Не удалось загрузить экзамены с сервера.");
+        setExams([]);
       }
     } finally {
       if (!silent) setLoading(false);
@@ -300,6 +276,10 @@ export const ExamListPage: React.FC = () => {
   };
 
   const uploadFiles = async (files: FileList | File[]) => {
+    if (!courseId) {
+      alert("Активный курс не найден.");
+      return;
+    }
     setUploading(true);
     setUploadProgress(0);
 
@@ -312,7 +292,7 @@ export const ExamListPage: React.FC = () => {
       formData.append("file", file);
       formData.append("title", examTitle);
       formData.append("description", `Препарат для экзамена: ${file.name}`);
-      formData.append("course_id", "11111111-1111-1111-1111-111111111111");
+      formData.append("course_id", courseId);
 
       try {
         setUploadProgress(Math.round((i / files.length) * 100));
@@ -327,8 +307,10 @@ export const ExamListPage: React.FC = () => {
         const slide = res.data;
         uploadedSlides.push(slide);
       } catch (err) {
-        console.error(err);
-        alert(`Не удалось загрузить файл: ${file.name}`);
+        const message = axios.isAxiosError(err) && err.response?.data?.detail
+          ? err.response.data.detail
+          : `Не удалось загрузить файл: ${file.name}`;
+        alert(message);
       }
     }
 
@@ -355,6 +337,10 @@ export const ExamListPage: React.FC = () => {
   };
 
   const handleSaveAndPublishExam = async () => {
+    if (!courseId) {
+      alert("Активный курс не найден.");
+      return;
+    }
     setLoading(true);
     try {
       const activeSlideIds = examSlides.map(s => s.id);
@@ -390,7 +376,7 @@ export const ExamListPage: React.FC = () => {
         const examRes = await axios.post("/api/v1/exams/", {
           title: newExamTitle,
           description: `Интерактивный экзамен по препаратам: ${slideTitlesText}`,
-          course_id: "11111111-1111-1111-1111-111111111111",
+          course_id: courseId,
           duration_minutes: newExamDuration,
           passing_score: newExamPassing,
           is_active: true,
@@ -488,7 +474,7 @@ export const ExamListPage: React.FC = () => {
         const examRes = await axios.post("/api/v1/exams/", {
           title: data.title,
           description: data.description || "Импортированный экзамен по гистологии",
-          course_id: data.course_id || "11111111-1111-1111-1111-111111111111",
+          course_id: data.course_id || courseId,
           duration_minutes: data.duration_minutes || 45,
           passing_score: data.passing_score || 60.0,
           is_active: data.is_active !== undefined ? data.is_active : true,
@@ -565,22 +551,22 @@ export const ExamListPage: React.FC = () => {
         .filter(Boolean) as string[];
       setFlaggedRegionIds(flaggedIds);
       setEditingExamQuestions(fullExam.questions || []);
+      setIsCreatorOpen(true);
 
       if (slidesInExam.length > 0) {
         const firstSlide = slidesInExam[0];
         setUploadedSlideId(firstSlide.id);
         setSlideTitle(firstSlide.title);
 
-        const allFetched: any[] = [];
-        await Promise.all(slidesInExam.map(async (slide) => {
+        const regionSets = await Promise.all(slidesInExam.map(async (slide) => {
           try {
-            const res = await axios.get(`/api/v1/regions/slide/${slide.id}`);
-            const regionsWithSlide = res.data.map((r: any) => ({ ...r, slideId: slide.id }));
-            allFetched.push(...regionsWithSlide);
-          } catch (err) {
-            console.error("Error fetching regions for slide", slide.id, err);
+            const regionsRes = await axios.get(`/api/v1/regions/slide/${slide.id}`);
+            return regionsRes.data.map((region: any) => ({ ...region, slideId: slide.id }));
+          } catch {
+            return [];
           }
         }));
+        const allFetched = regionSets.flat();
 
         const sorted = [...allFetched].sort((a, b) => {
           const posA = savedRegionOrder.indexOf(a.id);
@@ -595,9 +581,7 @@ export const ExamListPage: React.FC = () => {
         setCreatorRegions([]);
         setCreatorStep(1);
       }
-      setIsCreatorOpen(true);
     } catch (err) {
-      console.error("Failed to load exam details for editing", err);
       alert("Не удалось загрузить данные экзамена для редактирования.");
     } finally {
       setLoading(false);
@@ -878,7 +862,6 @@ ID Экзамена: ${selectedExamForReport.id}
 
   return (
     <Box sx={{ maxWidth: 1250, mx: "auto", px: 2 }}>
-      {}
       <input
         type="file"
         id="json-import-input"
@@ -887,7 +870,6 @@ ID Экзамена: ${selectedExamForReport.id}
         onChange={handleImportJson}
       />
 
-      {}
       <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={4} flexWrap="wrap" gap={2}>
         <Box>
           {(user.role === "teacher" || user.role === "admin") && (
@@ -941,7 +923,6 @@ ID Экзамена: ${selectedExamForReport.id}
       {error && <Alert severity="warning" sx={{ mb: 4, borderRadius: "10px" }}>{error}</Alert>}
 
       <Grid container spacing={4}>
-        {}
         <Grid item xs={12} lg={user.role === "teacher" || user.role === "admin" ? 7 : 12}>
           <Stack spacing={3}>
             {exams.map((exam, index) => {
@@ -966,7 +947,6 @@ ID Экзамена: ${selectedExamForReport.id}
                     "&:hover": { borderColor: "#94a3b8", transform: "translateY(-2px)" }
                   }}
                 >
-                  {}
                   <Box
                     sx={{
                       width: { xs: "100%", sm: 200 },
@@ -978,7 +958,6 @@ ID Экзамена: ${selectedExamForReport.id}
                     }}
                   />
 
-                  {}
                   <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
                     <CardContent sx={{ p: 3, flexGrow: 1, display: "flex", flexDirection: "column" }}>
                       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
@@ -1028,7 +1007,6 @@ ID Экзамена: ${selectedExamForReport.id}
                         {exam.description || "Описание отсутствует."}
                       </Typography>
 
-                      {}
                       <Box display="flex" gap={1} sx={{ mb: 2.5, flexWrap: "wrap" }}>
                         <Chip
                           icon={<QuestionMarkIcon style={{ fontSize: 13, color: "#0040b0" }} />}
@@ -1060,7 +1038,6 @@ ID Экзамена: ${selectedExamForReport.id}
 
                       <Divider sx={{ my: 1.5, borderColor: "#f1f5f9" }} />
 
-                      {}
                       <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1} sx={{ mt: "auto" }}>
                         {user.role === "student" ? (
                           <Button
@@ -1128,12 +1105,10 @@ ID Экзамена: ${selectedExamForReport.id}
           </Stack>
         </Grid>
 
-        {}
         {(user.role === "teacher" || user.role === "admin") && (
           <Grid item xs={12} lg={5}>
             <Stack spacing={3}>
 
-              {}
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.03)", borderRadius: "14px" }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box display="flex" alignItems="center" gap={1} mb={0.5}>
@@ -1146,7 +1121,6 @@ ID Экзамена: ${selectedExamForReport.id}
                     Сводные показатели успеваемости студентов по текущим контрольным.
                   </Typography>
 
-                  {}
                   <Grid container spacing={2} mb={3}>
                     <Grid item xs={6}>
                       <Paper sx={{ p: 2, border: "1px solid #e2e8f0", bgcolor: "#f8fafc", borderRadius: "10px", textAlign: "center", boxShadow: "none" }}>
@@ -1164,7 +1138,6 @@ ID Экзамена: ${selectedExamForReport.id}
                     </Grid>
                   </Grid>
 
-                  {}
                   <Typography variant="subtitle2" fontWeight={800} color="#334155" sx={{ mb: 1.5, fontSize: "0.85rem", letterSpacing: 0.5, textTransform: "uppercase" }}>
                     Успешность по темам (%)
                   </Typography>
@@ -1191,7 +1164,6 @@ ID Экзамена: ${selectedExamForReport.id}
 
                   <Divider sx={{ my: 2.5 }} />
 
-                  {}
                   <Typography variant="subtitle2" fontWeight={800} color="#334155" sx={{ mb: 2, fontSize: "0.85rem", letterSpacing: 0.5, textTransform: "uppercase" }}>
                     Активность прохождения
                   </Typography>
@@ -1221,7 +1193,6 @@ ID Экзамена: ${selectedExamForReport.id}
                 </CardContent>
               </Card>
 
-              {}
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.03)", borderRadius: "14px" }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" fontWeight={800} sx={{ mb: 1, color: "#0f172a" }}>
@@ -1296,7 +1267,6 @@ ID Экзамена: ${selectedExamForReport.id}
         )}
       </Grid>
 
-      {}
       <Dialog
         open={schedulingOpen}
         onClose={() => setSchedulingOpen(false)}
@@ -1312,7 +1282,6 @@ ID Экзамена: ${selectedExamForReport.id}
             Выберите период времени на календаре или укажите точные даты ниже.
           </Typography>
 
-          {}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} px={1}>
             <Typography variant="subtitle2" fontWeight={800} color="#1e293b">
               {currentCalendarMonth.toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}
@@ -1335,9 +1304,7 @@ ID Экзамена: ${selectedExamForReport.id}
             </Box>
           </Box>
 
-          {}
           <Box sx={{ border: "1px solid #e2e8f0", borderRadius: "10px", p: 1, bgcolor: "#f8fafc", mb: 3 }}>
-            {}
             <Grid container columns={7} sx={{ textAlign: "center", mb: 1 }}>
               {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map(w => (
                 <Grid item xs={1} key={w}>
@@ -1346,7 +1313,6 @@ ID Экзамена: ${selectedExamForReport.id}
               ))}
             </Grid>
 
-            {}
             <Grid container columns={7} spacing={0.5} sx={{ textAlign: "center" }}>
               {getCalendarDays().map((dayNum, idx) => {
                 if (dayNum === null) {
@@ -1379,7 +1345,6 @@ ID Экзамена: ${selectedExamForReport.id}
             </Grid>
           </Box>
 
-          {}
           <Stack spacing={2}>
             <TextField
               label="Доступен с (От)"
@@ -1413,7 +1378,6 @@ ID Экзамена: ${selectedExamForReport.id}
         </DialogActions>
       </Dialog>
 
-      {}
       <Dialog
         open={reportOpen}
         onClose={() => setReportOpen(false)}
@@ -1494,7 +1458,6 @@ ID Экзамена: ${selectedExamForReport.id}
                 Визуальный отчет: {selectedExamForReport?.title}
               </Typography>
 
-              {}
               <Paper sx={{ p: 3, border: "1.5px solid #0040b0", bgcolor: "#f8fafc", borderRadius: "12px", boxShadow: "none" }}>
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={6}>
@@ -1509,7 +1472,6 @@ ID Экзамена: ${selectedExamForReport.id}
 
                 <Divider sx={{ my: 1.5 }} />
 
-                {}
                 <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 700, display: "block", mb: 1.5 }}>РАСПРЕДЕЛЕНИЕ ОЦЕНОК</Typography>
 
                 <Stack spacing={1}>
@@ -1572,7 +1534,6 @@ ID Экзамена: ${selectedExamForReport.id}
         </DialogActions>
       </Dialog>
 
-      {}
       <Dialog
         fullScreen
         open={isCreatorOpen}
@@ -1591,7 +1552,6 @@ ID Экзамена: ${selectedExamForReport.id}
           }
         }}
       >
-        {}
         {creatorStep === 1 && (
           <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "#f8fafc" }}>
             <Box sx={{ p: 3, borderBottom: "1px solid #e2e8f0", bgcolor: "#ffffff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1624,7 +1584,6 @@ ID Экзамена: ${selectedExamForReport.id}
                     Загрузить новые препараты (SVS, TIF, PNG, JPG, JPEG)
                   </Typography>
 
-                  {}
                   <Box
                     onClick={() => document.getElementById("slide-file-input")?.click()}
                     onDragOver={(e) => e.preventDefault()}
@@ -1776,10 +1735,8 @@ ID Экзамена: ${selectedExamForReport.id}
           </Box>
         )}
 
-        {}
         {creatorStep === 2 && uploadedSlideId && (
           <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "#ffffff", overflow: "hidden" }}>
-            {}
             <Box
               sx={{
                 p: 2,
@@ -1826,9 +1783,7 @@ ID Экзамена: ${selectedExamForReport.id}
               </Box>
             </Box>
 
-            {}
             <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden", position: "relative" }}>
-              {}
               <Paper
                 elevation={0}
                 sx={{
@@ -1960,12 +1915,10 @@ ID Экзамена: ${selectedExamForReport.id}
                 </Box>
               </Paper>
 
-              {}
               <Box sx={{ flexGrow: 1, height: "100%", position: "relative" }}>
                 <SlideViewer slideId={uploadedSlideId} isTeacher={true} />
               </Box>
 
-              {}
               <Paper
                 elevation={0}
                 sx={{
@@ -2061,7 +2014,6 @@ ID Экзамена: ${selectedExamForReport.id}
         )}
       </Dialog>
 
-      {}
       <Dialog
         open={settingsDialogOpen}
         onClose={() => setSettingsDialogOpen(false)}

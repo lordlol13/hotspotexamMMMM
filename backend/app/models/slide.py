@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import String, ForeignKey, Integer, Float, Boolean, DateTime, func
+from sqlalchemy import String, ForeignKey, Integer, Float, Boolean, DateTime, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -12,6 +12,7 @@ class Slide(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    content_sha256: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     file_path: Mapped[str] = mapped_column(String(500), nullable=False)
     dzi_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     thumbnail_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
@@ -36,3 +37,7 @@ class Slide(Base):
     annotations: Mapped[List["Annotation"]] = relationship("Annotation", back_populates="slide", cascade="all, delete-orphan")
     exam_questions: Mapped[List["ExamQuestion"]] = relationship("ExamQuestion", back_populates="slide")
     slide_view_logs: Mapped[List["SlideViewLog"]] = relationship("SlideViewLog", back_populates="slide", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        UniqueConstraint("course_id", "content_sha256", name="uq_slides_course_content_sha256"),
+    )

@@ -1,11 +1,13 @@
 import os
 import uuid
 import shutil
+import hashlib
 from io import BytesIO
 from typing import List, Optional
 from fastapi import UploadFile, BackgroundTasks
 from sqlalchemy.orm import Session
 from PIL import Image
+from sqlalchemy.exc import IntegrityError
 
 from app.config import settings
 from app.models.slide import Slide
@@ -15,37 +17,42 @@ from app.database import SessionLocal
 
 class SlideService:
     @staticmethod
+    def calculate_file_hash(file_path: str) -> str:
+        digest = hashlib.sha256()
+        with open(file_path, "rb") as source:
+            while chunk := source.read(1024 * 1024):
+                digest.update(chunk)
+        return digest.hexdigest()
+
+    @staticmethod
     def get_slide_dir(slide_id: uuid.UUID) -> str:
-        """Get the filesystem path for a slide's directory."""
         path = os.path.join(settings.UPLOAD_DIR, "slides", str(slide_id))
         os.makedirs(path, exist_ok=True)
         return path
 
     @classmethod
-    def save_slide_file(cls, slide_id: uuid.UUID, file: UploadFile) -> str:
+    def save_slide_file(cls, slide_id: uuid.UUID, file: UploadFile) -> tuple[str, str]:
         slide_dir = cls.get_slide_dir(slide_id)
         ext = os.path.splitext(file.filename)[1].lower()
         file_path = os.path.join(slide_dir, f"original{ext}")
 
         file.file.seek(0)
+        digest = hashlib.sha256()
+        size = 0
         with open(file_path, "wb") as buffer:
             while chunk := file.file.read(1024 * 1024):
+                size += len(chunk)
+                if size > settings.MAX_SLIDE_UPLOAD_BYTES:
+                    buffer.close()
+                    os.remove(file_path)
+                    raise BadRequestException("Slide exceeds configured upload limit")
+                digest.update(chunk)
                 buffer.write(chunk)
 
-        file_size = os.path.getsize(file_path)
-        if file_size > settings.MAX_SLIDE_UPLOAD_BYTES:
-            os.remove(file_path)
-            raise BadRequestException("Slide exceeds configured upload limit")
-
-        return file_path
+        return file_path, digest.hexdigest()
 
     @classmethod
     def process_slide(cls, slide_id: uuid.UUID, db: Optional[Session] = None):
-        """
-        Open the slide to extract dimensions and metadata,
-        and generate a 1024px wide thumbnail.
-        Sets is_processed = True on completion.
-        """
         owns_session = db is None
         db = db or SessionLocal()
         processor = None
@@ -95,10 +102,6 @@ class SlideService:
         file: UploadFile,
         background_tasks: BackgroundTasks
     ) -> Slide:
-        """
-        Handle upload and register a slide in the database.
-        Fires metadata extraction as a background task.
-        """
 
         ext = os.path.splitext(file.filename)[1].lower()
         allowed_exts = [
@@ -110,13 +113,35 @@ class SlideService:
 
         slide_id = uuid.uuid4()
 
-        file_path = cls.save_slide_file(slide_id, file)
+        file_path, content_sha256 = cls.save_slide_file(slide_id, file)
+
+        missing_hashes = db.query(Slide).filter(
+            Slide.course_id == course_id,
+            Slide.content_sha256.is_(None),
+        ).all()
+        for existing in missing_hashes:
+            if os.path.exists(existing.file_path):
+                existing.content_sha256 = cls.calculate_file_hash(existing.file_path)
+        if missing_hashes:
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+
+        duplicate = db.query(Slide).filter(
+            Slide.course_id == course_id,
+            Slide.content_sha256 == content_sha256,
+        ).first()
+        if duplicate:
+            shutil.rmtree(cls.get_slide_dir(slide_id), ignore_errors=True)
+            raise BadRequestException("This file is already uploaded to the course")
 
         slide = Slide(
             id=slide_id,
             title=title,
             description=description,
             original_filename=file.filename,
+            content_sha256=content_sha256,
             file_path=file_path,
             course_id=course_id,
             uploaded_by=user_id,
@@ -124,7 +149,12 @@ class SlideService:
         )
 
         db.add(slide)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            shutil.rmtree(cls.get_slide_dir(slide_id), ignore_errors=True)
+            raise BadRequestException("This file is already uploaded to the course")
         db.refresh(slide)
 
         background_tasks.add_task(cls.process_slide, slide_id, db)
@@ -156,10 +186,6 @@ class SlideService:
 
     @classmethod
     def get_slide_tile(cls, db: Session, slide_id: uuid.UUID, level: int, col: int, row: int) -> bytes:
-        """
-        Load slide dynamically and crop the requested tile on the fly.
-        Returns tile bytes in JPEG format.
-        """
         slide = cls.get_slide(db, slide_id)
         if not slide.is_processed:
             raise BadRequestException("Slide is not processed yet")

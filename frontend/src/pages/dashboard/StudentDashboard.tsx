@@ -80,47 +80,9 @@ export const StudentDashboard: React.FC = () => {
         const res = await axios.get("/api/v1/analytics/student");
         setData(res.data);
       } catch (err: any) {
-        console.error(err);
         if (!silent) {
-          setError("Could not retrieve live analytics. Rendering sandbox demo mode.");
-
-          setData({
-            average_score: 84.5,
-            completion_rate: 66.7,
-            exam_history: [
-              {
-                attempt_id: "1",
-                exam_id: "6e94e3a4-0bc5-4caf-b783-e256f3fda94b",
-                exam_title: "Mitosis & Cytology Exam",
-                started_at: "2026-06-12T10:00:00Z",
-                submitted_at: "2026-06-12T10:14:23Z",
-                score: 8.5,
-                max_score: 10.0,
-                score_pct: 85.0,
-                passing_score: 75.0,
-                passed: true,
-                is_graded: true
-              },
-              {
-                attempt_id: "2",
-                exam_id: "55555555-5555-5555-5555-555555555555",
-                exam_title: "Epithelium tissues Quiz",
-                started_at: "2026-06-13T14:30:00Z",
-                submitted_at: "2026-06-13T14:48:12Z",
-                score: 8.4,
-                max_score: 10.0,
-                score_pct: 84.0,
-                passing_score: 60.0,
-                passed: true,
-                is_graded: true
-              }
-            ],
-            score_trends: [
-              { date: "2026-06-08", score_pct: 78.0, exam_title: "Pre-Assessment" },
-              { date: "2026-06-12", score_pct: 85.0, exam_title: "Mitosis & Cytology Exam" },
-              { date: "2026-06-13", score_pct: 84.0, exam_title: "Epithelium tissues Quiz" }
-            ]
-          });
+          setError("Не удалось загрузить аналитику с сервера.");
+          setData(null);
         }
       } finally {
         if (!silent) setLoading(false);
@@ -187,7 +149,6 @@ export const StudentDashboard: React.FC = () => {
 
   return (
     <Box>
-      {}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 4, flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, color: "#0f172a" }}>
@@ -208,7 +169,6 @@ export const StudentDashboard: React.FC = () => {
         </Alert>
       )}
 
-      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {kpiCards.map((card) => (
           <Grid item xs={12} sm={4} key={card.label}>
@@ -241,7 +201,6 @@ export const StudentDashboard: React.FC = () => {
         ))}
       </Grid>
 
-      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={7}>
           <Card sx={{ p: 2.5, height: "100%", boxSizing: "border-box" }}>
@@ -314,7 +273,6 @@ export const StudentDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {}
       <Box>
         <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
           История экзаменов

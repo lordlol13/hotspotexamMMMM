@@ -13,7 +13,6 @@ router = APIRouter()
 
 @router.get("/public", status_code=status.HTTP_200_OK)
 def list_groups_public(db: Session = Depends(get_db)):
-    """Получить список всех групп без авторизации (для формы регистрации)."""
     return GroupService.get_all_groups(db)
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -21,7 +20,6 @@ def list_groups(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """Получить список всех групп с количеством студентов."""
     return GroupService.get_all_groups(db)
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -30,7 +28,6 @@ def create_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """Создать новую группу."""
     return GroupService.create_group(db, data)
 
 @router.put("/{group_id}", status_code=status.HTTP_200_OK)
@@ -40,7 +37,6 @@ def update_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """Обновить группу."""
     return GroupService.update_group(db, group_id, data)
 
 @router.delete("/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -49,5 +45,4 @@ def delete_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """Удалить группу. Студенты переводятся в 'Без группы'."""
     GroupService.delete_group(db, group_id)

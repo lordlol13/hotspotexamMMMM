@@ -48,7 +48,6 @@ export const StudentsPage: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", py: 2 }}>
-      {}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
           {isTeacher ? "Студенты и успеваемость" : "Мои одногруппники"}
@@ -61,7 +60,6 @@ export const StudentsPage: React.FC = () => {
         </Alert>
       )}
 
-      {}
       <Box sx={{ display: "flex", gap: 2, mb: 3.5, flexWrap: "wrap", alignItems: "center" }}>
         <TextField
           placeholder="Поиск по имени или email..."
@@ -181,7 +179,6 @@ export const StudentsPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {}
       <UserProfileDialog userId={selectedUserId} open={!!selectedUserId} onClose={() => setSelectedUserId(null)} />
     </Box>
   );

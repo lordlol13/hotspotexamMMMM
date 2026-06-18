@@ -9,10 +9,6 @@ logger = logging.getLogger("app.services.email")
 class EmailService:
     @staticmethod
     def send_email(to_email: str, subject: str, body: str) -> bool:
-        """
-        Sends an email using the SMTP settings from config.
-        If SMTP fails, it falls back to logging the email for local development.
-        """
         msg = MIMEMultipart()
         msg['From'] = settings.SMTP_FROM_EMAIL
         msg['To'] = to_email
@@ -27,11 +23,6 @@ class EmailService:
                 server.send_message(msg)
             logger.info(f"Email sent to {to_email}")
             return True
-        except Exception as e:
-            logger.error(f"Failed to send email to {to_email} via SMTP: {e}")
-            logger.warning("--- [MOCK MAIL FALLBACK] ---")
-            logger.warning(f"To: {to_email}")
-            logger.warning(f"Subject: {subject}")
-            logger.warning(f"Body: {body}")
-            logger.warning("----------------------------")
+        except Exception:
+            logger.exception("Email delivery failed")
             return False

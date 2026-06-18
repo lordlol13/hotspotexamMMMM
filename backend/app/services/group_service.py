@@ -12,7 +12,6 @@ class GroupService:
 
     @staticmethod
     def get_all_groups(db: Session) -> List[dict]:
-        """Получить все группы с количеством студентов."""
         groups_with_counts = (
             db.query(Group, func.count(Student.id).label("student_count"))
             .outerjoin(Student, Group.id == Student.group_id)
@@ -34,7 +33,6 @@ class GroupService:
 
     @staticmethod
     def create_group(db: Session, data: GroupCreate) -> dict:
-        """Создать новую группу."""
         existing = db.query(Group).filter(Group.name == data.name).first()
         if existing:
             raise HTTPException(
@@ -61,7 +59,6 @@ class GroupService:
 
     @staticmethod
     def update_group(db: Session, group_id: uuid.UUID, data: GroupUpdate) -> dict:
-        """Обновить группу."""
         group = db.query(Group).filter(Group.id == group_id).first()
         if not group:
             raise HTTPException(
@@ -88,7 +85,6 @@ class GroupService:
 
     @staticmethod
     def delete_group(db: Session, group_id: uuid.UUID) -> None:
-        """Удалить группу. Студенты этой группы получают group_id = None."""
         group = db.query(Group).filter(Group.id == group_id).first()
         if not group:
             raise HTTPException(

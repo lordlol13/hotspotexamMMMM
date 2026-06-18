@@ -22,7 +22,6 @@ def list_students(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN, UserRole.STUDENT]))
 ):
-    """Получить список всех студентов с информацией о группе."""
     return StudentService.get_all_students(db, current_user=current_user)
 
 @router.put("/{student_id}/group", status_code=status.HTTP_200_OK)
@@ -32,7 +31,6 @@ def update_student_group(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """Назначить студента в группу или убрать из группы."""
     group_uuid = uuid.UUID(data.group_id) if data.group_id else None
     return StudentService.update_student_group(db, student_id, group_uuid)
 
@@ -42,7 +40,6 @@ def get_user_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Получить информацию о профиле пользователя с учетом настроек конфиденциальности."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден")

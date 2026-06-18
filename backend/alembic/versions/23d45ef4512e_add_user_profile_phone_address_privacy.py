@@ -1,17 +1,9 @@
-"""add user profile phone address privacy
-
-Revision ID: 23d45ef4512e
-Revises: 1cfa2e2021c4
-Create Date: 2026-06-14 22:40:00.000000
-
-"""
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
 
-# revision identifiers, used by Alembic.
 revision: str = '23d45ef4512e'
 down_revision: Union[str, None] = '1cfa2e2021c4'
 branch_labels: Union[str, Sequence[str], None] = None

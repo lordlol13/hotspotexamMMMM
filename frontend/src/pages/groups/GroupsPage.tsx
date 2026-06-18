@@ -53,7 +53,6 @@ export const GroupsPage: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", py: 2 }}>
-      {}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
           {isTeacher ? "Студенческие группы" : "Моя академическая группа"}
@@ -203,7 +202,6 @@ export const GroupsPage: React.FC = () => {
         </Card>
       )}
 
-      {}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 800, fontSize: "1.15rem", pb: 1 }}>Создание новой группы</DialogTitle>
         <DialogContent>
@@ -249,7 +247,6 @@ export const GroupsPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {}
       <Dialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 800, fontSize: "1.1rem" }}>Удалить группу?</DialogTitle>
         <DialogContent>

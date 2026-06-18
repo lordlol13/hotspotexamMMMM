@@ -148,90 +148,9 @@ export const TeacherDashboard: React.FC = () => {
         const res = await axios.get("/api/v1/analytics/teacher");
         setData(res.data);
       } catch (err: any) {
-        console.error(err);
         if (!silent) {
-          setError("Could not retrieve live analytics. Rendering sandbox demo mode.");
-
-          setData({
-            group_statistics: [
-              {
-                group_name: "Группа 1-А",
-                course_title: "Микроскопическая патология",
-                average_score: 83.2,
-                pass_rate: 80.0,
-                fail_rate: 20.0,
-                total_attempts: 15
-              },
-              {
-                group_name: "Группа 1-Б",
-                course_title: "Микроскопическая патология",
-                average_score: 74.8,
-                pass_rate: 65.0,
-                fail_rate: 35.0,
-                total_attempts: 12
-              },
-              {
-                group_name: "Группа 2-А",
-                course_title: "Гистология полости рта",
-                average_score: 88.5,
-                pass_rate: 90.0,
-                fail_rate: 10.0,
-                total_attempts: 10
-              }
-            ],
-            student_rankings: [
-              {
-                student_name: "Эмма Ватсон",
-                email: "emma@edu.ru",
-                group_name: "Группа 2-А",
-                average_score: 96.5,
-                completed_exams: 3
-              },
-              {
-                student_name: "Студент Студентович",
-                email: "alex@edu.ru",
-                group_name: "Группа 1-А",
-                average_score: 85.0,
-                completed_exams: 2
-              },
-              {
-                student_name: "Иван Иванов",
-                email: "john@edu.ru",
-                group_name: "Группа 1-Б",
-                average_score: 72.0,
-                completed_exams: 2
-              }
-            ],
-            overall_stats: {
-              pass_rate: 76.5,
-              fail_rate: 23.5,
-              total_attempts: 37,
-              average_score: 81.3
-            },
-            question_difficulty: [
-              {
-                exam_title: "Экзамен по митозу",
-                question_text: "Определите фазу деления клетки по расположению хромосом в экваториальной плоскости",
-                question_type: "multiple_choice",
-                correct_percentage: 42.5,
-                total_responses: 12
-              },
-              {
-                exam_title: "Тест по эпителиальным тканям",
-                question_text: "Укажите морфологию клеток плоского эпителия",
-                question_type: "single_choice",
-                correct_percentage: 65.0,
-                total_responses: 15
-              },
-              {
-                exam_title: "Экзамен по митозу",
-                question_text: "Является ли митохондрия энергетической станцией клетки?",
-                question_type: "true_false",
-                correct_percentage: 92.0,
-                total_responses: 10
-              }
-            ]
-          });
+          setError("Не удалось загрузить аналитику с сервера.");
+          setData(null);
         }
       } finally {
         if (!silent) setLoading(false);
@@ -265,7 +184,6 @@ export const TeacherDashboard: React.FC = () => {
 
   return (
     <Box>
-      {}
       <Box mb={4}>
         <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, color: "#0f172a" }}>
           Панель преподавателя
@@ -281,7 +199,6 @@ export const TeacherDashboard: React.FC = () => {
         </Alert>
       )}
 
-      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <KpiCard
@@ -321,9 +238,7 @@ export const TeacherDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {}
         <Grid item xs={12} md={5}>
           <Card sx={{ p: 2.5, height: "100%", boxSizing: "border-box" }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
@@ -363,7 +278,6 @@ export const TeacherDashboard: React.FC = () => {
           </Card>
         </Grid>
 
-        {}
         <Grid item xs={12} md={7}>
           <Card sx={{ p: 2.5, height: "100%", boxSizing: "border-box" }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
@@ -384,9 +298,7 @@ export const TeacherDashboard: React.FC = () => {
         </Grid>
       </Grid>
 
-      {}
       <Grid container spacing={3}>
-        {}
         <Grid item xs={12} md={6}>
           <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
             Рейтинг студентов
@@ -419,7 +331,6 @@ export const TeacherDashboard: React.FC = () => {
           </TableContainer>
         </Grid>
 
-        {}
         <Grid item xs={12} md={6}>
           <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
             Анализ сложности вопросов

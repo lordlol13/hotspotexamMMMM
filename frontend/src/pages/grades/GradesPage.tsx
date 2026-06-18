@@ -58,44 +58,9 @@ export const GradesPage: React.FC = () => {
           const res = await axios.get("/api/v1/analytics/student");
           setStudentData(res.data);
         } catch {
-          setError("Используются демонстрационные данные.");
-          setStudentData({
-            average_score: 83.5,
-            completion_rate: 75.0,
-            exam_history: [
-              {
-                attempt_id: "attempt1",
-                exam_id: "exam1",
-                exam_title: "Экзамен по цитологии и митозу",
-                started_at: "2026-06-11T09:00:00Z",
-                submitted_at: "2026-06-11T09:20:15Z",
-                score: 8.5,
-                max_score: 10.0,
-                score_pct: 85.0,
-                passing_score: 70.0,
-                passed: true,
-                is_graded: true
-              },
-              {
-                attempt_id: "attempt2",
-                exam_id: "exam2",
-                exam_title: "Тест: Эпителиальные ткани",
-                started_at: "2026-06-12T11:00:00Z",
-                submitted_at: "2026-06-12T11:18:44Z",
-                score: 8.2,
-                max_score: 10.0,
-                score_pct: 82.0,
-                passing_score: 60.0,
-                passed: true,
-                is_graded: true
-              }
-            ],
-            score_trends: [
-              { date: "2026-06-11", score_pct: 85.0, exam_title: "Экзамен по цитологии и митозу" },
-              { date: "2026-06-12", score_pct: 82.0, exam_title: "Тест: Эпителиальные ткани" }
-            ]
-          });
-        } finally {
+          setError("Не удалось загрузить оценки с сервера.");
+          setStudentData(null);
+      } finally {
           setLoading(false);
         }
       } else {
@@ -132,7 +97,6 @@ export const GradesPage: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", py: 2 }}>
-      {}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a" }}>
           {isTeacher ? "Журнал оценок и успеваемость" : "Моя зачетная книжка"}
@@ -147,7 +111,6 @@ export const GradesPage: React.FC = () => {
 
       {isTeacher ? (
         <Box>
-          {}
           <Grid container spacing={3} sx={{ mb: 5 }}>
             <Grid item xs={12} sm={6} md={3}>
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "none" }}>
@@ -193,7 +156,6 @@ export const GradesPage: React.FC = () => {
         </Box>
       ) : (
         <Grid container spacing={4} sx={{ mb: 5 }}>
-          {}
           <Grid item xs={12} md={4}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "none", borderRadius: "12px" }}>
@@ -213,7 +175,6 @@ export const GradesPage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {}
               {studentData?.score_trends && studentData.score_trends.length > 0 && (
                 <Card sx={{ border: "1px solid #e2e8f0", boxShadow: "none", borderRadius: "12px" }}>
                   <CardContent sx={{ p: 3 }}>
@@ -256,7 +217,6 @@ export const GradesPage: React.FC = () => {
             </Box>
           </Grid>
 
-          {}
           <Grid item xs={12} md={8}>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
               История прохождения тестов
@@ -318,7 +278,6 @@ export const GradesPage: React.FC = () => {
         </Grid>
       )}
 
-      {}
       <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a", mb: 2 }}>
         Рейтинг успеваемости студентов
       </Typography>
@@ -373,7 +332,6 @@ export const GradesPage: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {}
       <UserProfileDialog userId={selectedUserId} open={!!selectedUserId} onClose={() => setSelectedUserId(null)} />
     </Box>
   );

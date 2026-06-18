@@ -11,7 +11,6 @@ class StudentService:
 
     @staticmethod
     def get_all_students(db: Session, current_user: Optional[User] = None) -> List[dict]:
-        """Получить всех студентов с информацией о пользователе и группе."""
         students = (
             db.query(Student, User, Group)
             .join(User, Student.id == User.id)
@@ -43,7 +42,6 @@ class StudentService:
 
     @staticmethod
     def update_student_group(db: Session, student_id: uuid.UUID, group_id: Optional[uuid.UUID]) -> dict:
-        """Назначить студента в группу или убрать из группы."""
         student = db.query(Student).filter(Student.id == student_id).first()
         if not student:
             raise HTTPException(
@@ -76,5 +74,4 @@ class StudentService:
 
     @staticmethod
     def remove_from_group(db: Session, student_id: uuid.UUID) -> dict:
-        """Убрать студента из группы."""
         return StudentService.update_student_group(db, student_id, None)

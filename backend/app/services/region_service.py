@@ -8,10 +8,6 @@ from app.core.exceptions import NotFoundException
 class RegionService:
     @staticmethod
     def create_region(db: Session, schema: RegionCreate, user_id: uuid.UUID) -> Region:
-        """
-        Register a new region of interest on a slide.
-        Geometry coordinates are stored in percentages (0..100) to support responsive scaling.
-        """
         region = Region(
             slide_id=schema.slide_id,
             title=schema.title,
@@ -36,14 +32,10 @@ class RegionService:
 
     @staticmethod
     def list_regions_by_slide(db: Session, slide_id: uuid.UUID) -> List[Region]:
-        """List all annotated regions of interest for a slide."""
         return db.query(Region).filter(Region.slide_id == slide_id).all()
 
     @staticmethod
     def update_region(db: Session, region_id: uuid.UUID, schema: RegionUpdate) -> Region:
-        """
-        Modify existing slide region parameters (coordinates, content, title).
-        """
         region = RegionService.get_region(db, region_id)
 
         update_data = schema.model_dump(exclude_unset=True)

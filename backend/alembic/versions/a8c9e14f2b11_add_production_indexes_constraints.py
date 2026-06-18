@@ -1,8 +1,3 @@
-"""add production indexes and constraints
-
-Revision ID: a8c9e14f2b11
-Revises: 5fd8a7465503
-"""
 from typing import Sequence, Union
 
 from alembic import op

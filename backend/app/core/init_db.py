@@ -49,4 +49,3 @@ def init_db() -> None:
         raise
     finally:
         db.close()
-

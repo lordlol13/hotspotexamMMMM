@@ -473,7 +473,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
 
   return (
     <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 10, pointerEvents: "none" }}>
-      {}
       {isTeacher && (
         <Box sx={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, pointerEvents: "auto" }}>
           <Paper
@@ -566,7 +565,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         </Box>
       )}
 
-      {}
       {isTeacher && (
         <Box sx={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", zIndex: 100, pointerEvents: "auto" }}>
           <Paper
@@ -648,7 +646,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         </Box>
       )}
 
-      {}
       <svg
         ref={svgRef}
         style={{
@@ -688,7 +685,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           </marker>
         </defs>
 
-        {}
         {scaledRegions.map((region) => {
           const isView = drawMode === "view";
           return (
@@ -795,7 +791,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
                 </g>
               )}
 
-              {}
               {isTeacher && isView && (
                 <foreignObject
                   x={
@@ -839,7 +834,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           );
         })}
 
-        {}
         {activeDrawingShape && (
           <g>
             {activeDrawingShape.type === "rectangle" && (
@@ -924,7 +918,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
           </g>
         )}
 
-        {}
         {scaledSelectedPoint && (
           <g>
             <circle
@@ -947,7 +940,6 @@ export const DrawingOverlay: React.FC<DrawingOverlayProps> = ({
         )}
       </svg>
 
-      {}
       <RegionEditor
         open={editorOpen}
         slideId={slideId}

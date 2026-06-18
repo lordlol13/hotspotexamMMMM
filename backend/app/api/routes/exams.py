@@ -22,9 +22,6 @@ def get_exams(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Get all exams for a course.
-    """
     if current_user.role == UserRole.STUDENT:
         return ExamService.get_exams_for_student(db, course_id, current_user.id)
     return ExamService.get_exams_by_course(db, course_id)
@@ -35,10 +32,6 @@ def create_exam(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Create a new exam session for a course.
-    Role: Teacher or Admin.
-    """
     AccessService.require_course_manager(db, schema.course_id, current_user)
     return ExamService.create_exam(db, schema, current_user.id)
 
@@ -49,10 +42,6 @@ def add_exam_question(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Add a question with multiple candidate options to an exam.
-    Role: Teacher or Admin.
-    """
     AccessService.require_exam_manager(db, exam_id, current_user)
     return ExamService.add_question(db, exam_id, schema)
 
@@ -62,11 +51,6 @@ def start_exam_attempt(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.STUDENT]))
 ):
-    """
-    Start an exam attempt session.
-    Checks attempt limits and active retake tokens, then returns initialized session details.
-    Role: Student.
-    """
     if not ExamService.can_student_access_exam(db, exam_id, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -80,10 +64,6 @@ def get_exam(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Get exam properties and questions.
-    SECURITY: If request is from a Student, strips correct answers to prevent source hacking!
-    """
     exam = ExamService.get_exam(db, exam_id)
     if current_user.role == UserRole.STUDENT and not ExamService.can_student_access_exam(db, exam_id, current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this exam")
@@ -104,10 +84,6 @@ def submit_exam_attempt(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.STUDENT]))
 ):
-    """
-    Submit exam answers, execute auto-grading routines, and return graded session details.
-    Role: Student.
-    """
 
     from app.models.attempt import ExamAttempt
     db_attempt = db.query(ExamAttempt).filter(ExamAttempt.id == attempt_id).first()
@@ -124,10 +100,6 @@ def grant_exam_retake(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Grant custom retake attempts for a student.
-    Role: Teacher or Admin.
-    """
     AccessService.require_exam_manager(db, schema.exam_id, current_user)
     return ExamService.grant_retake(db, schema, current_user.id)
 
@@ -138,10 +110,6 @@ def update_exam(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Update exam properties.
-    Role: Teacher or Admin.
-    """
     AccessService.require_exam_manager(db, exam_id, current_user)
     return ExamService.update_exam(db, exam_id, schema)
 
@@ -151,10 +119,6 @@ def delete_exam(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Delete an exam and all its questions.
-    Role: Teacher or Admin.
-    """
     AccessService.require_exam_manager(db, exam_id, current_user)
     ExamService.delete_exam(db, exam_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -165,10 +129,6 @@ def clear_exam_questions(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Delete all questions from an exam.
-    Role: Teacher or Admin.
-    """
     AccessService.require_exam_manager(db, exam_id, current_user)
     ExamService.clear_questions(db, exam_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -179,10 +139,6 @@ def flag_exam_question(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Flag or unflag a question for teacher review.
-    Accessible by all roles (students can flag, teachers/admins can toggle/resolve).
-    """
     from app.models.question import ExamQuestion
     question = db.query(ExamQuestion).filter(ExamQuestion.id == question_id).first()
     if not question:

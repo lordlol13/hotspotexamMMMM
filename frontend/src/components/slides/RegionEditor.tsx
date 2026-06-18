@@ -211,7 +211,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
 
       <DialogContent sx={{ mt: 2 }}>
         <Box display="flex" flexDirection="column" gap={2.5}>
-          {}
           <TextField
             label="Название области (метка)"
             variant="outlined"
@@ -222,7 +221,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          {}
           {contentType === "question" && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <TextField
@@ -286,7 +284,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             </Box>
           )}
 
-          {}
           {contentType === "question_point" && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <TextField
@@ -303,7 +300,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             </Box>
           )}
 
-          {}
           {(contentType === "question" || contentType === "question_point" || contentType === "explanation") && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <Typography variant="subtitle2" fontWeight={700} color="primary.main">
@@ -364,7 +360,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
                 </label>
               </Box>
 
-              {}
               {mediaUrl && (
                 <Box sx={{ mt: 1, p: 1.5, border: "1px dashed #cbd5e1", borderRadius: "8px", bgcolor: "#ffffff" }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1, fontWeight: 600 }}>
@@ -395,7 +390,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
             </Box>
           )}
 
-          {}
           {contentType !== "question" && contentType !== "question_point" && contentType !== "explanation" && (
             <Box display="flex" flexDirection="column" gap={2} bgcolor="#f8fafc" p={2.5} borderRadius={2} border="1px solid #e2e8f0">
               <Typography variant="subtitle2" fontWeight={700} color="primary.main">
@@ -461,7 +455,6 @@ export const RegionEditor: React.FC<RegionEditorProps> = ({
                 </label>
               </Box>
 
-              {}
               {mediaUrl && (
                 <Box sx={{ mt: 1, p: 1.5, border: "1px dashed #cbd5e1", borderRadius: "8px", bgcolor: "#ffffff" }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1, fontWeight: 600 }}>

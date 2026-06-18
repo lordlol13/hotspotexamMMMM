@@ -6,7 +6,6 @@ import uuid
 from app.config import settings
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain text password against a bcrypt hash."""
     try:
         return bcrypt.checkpw(
             plain_password.encode("utf-8"),
@@ -16,12 +15,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 def get_password_hash(password: str) -> str:
-    """Generate a bcrypt hash of a plain text password."""
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 def create_access_token(subject: Union[str, Any], role: str, expires_delta: Optional[timedelta] = None) -> str:
-    """Generate a JWT access token for authentication."""
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -39,7 +36,6 @@ def create_access_token(subject: Union[str, Any], role: str, expires_delta: Opti
     return encoded_jwt
 
 def create_refresh_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """Generate a JWT refresh token to renew access tokens."""
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -56,10 +52,6 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: Optional[timed
     return encoded_jwt
 
 def verify_token(token: str, expected_type: str = "access") -> Optional[dict]:
-    """
-    Decode and verify a JWT token.
-    Returns the decoded payload if valid, otherwise None.
-    """
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         token_type = payload.get("type")

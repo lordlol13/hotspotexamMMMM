@@ -28,10 +28,6 @@ def upload_slide(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Upload a microscopy slide (SVS, TIFF, PNG, JPG, WEBP).
-    Role: Teacher or Admin.
-    """
     AccessService.require_course_manager(db, course_id, current_user)
     slide = SlideService.upload_slide(
         db=db,
@@ -48,19 +44,14 @@ def upload_slide(
 
 @router.get("/course/{course_id}", response_model=List[SlideResponse])
 def list_course_slides(course_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-    """List all slides uploaded for a specific course."""
     return SlideService.list_slides_by_course(db, course_id)
 
 @router.get("/{slide_id}", response_model=SlideResponse)
 def get_slide_metadata(slide_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-    """Get metadata for a slide."""
     return SlideService.get_slide(db, slide_id)
 
 @router.get("/{slide_id}/dzi")
 def get_slide_dzi(slide_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-    """
-    Get Deep Zoom Image (DZI) XML descriptor for OpenSeadragon viewer.
-    """
     slide = SlideService.get_slide(db, slide_id)
 
     from app.utils.svs_processor import UnifiedSlideProcessor
@@ -79,18 +70,11 @@ def get_slide_tile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Serve slide tiles dynamically on-demand.
-    Used by OpenSeadragon for pan/zoom resolution changes.
-    """
     tile_bytes = SlideService.get_slide_tile(db, slide_id, level, col, row)
     return Response(content=tile_bytes, media_type="image/jpeg", headers={"Cache-Control": f"private, max-age={settings.TILE_CACHE_MAX_AGE_SECONDS}"})
 
 @router.get("/{slide_id}/thumbnail")
 def get_slide_thumbnail(slide_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-    """
-    Serve the pre-extracted slide thumbnail preview.
-    """
     slide = SlideService.get_slide(db, slide_id)
     if not slide.thumbnail_path or not os.path.exists(slide.thumbnail_path):
         from app.core.exceptions import NotFoundException
@@ -103,9 +87,6 @@ def delete_slide(
     db: Session = Depends(get_db),
     current_user: User = Depends(RoleChecker([UserRole.TEACHER, UserRole.ADMIN]))
 ):
-    """
-    Delete a slide and purge its files from the server.
-    """
     AccessService.require_slide_manager(db, slide_id, current_user)
     SlideService.delete_slide(db, slide_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

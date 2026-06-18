@@ -10,11 +10,6 @@ import {
 import axios from "axios";
 import DrawingOverlay from "./DrawingOverlay";
 
-const logger = {
-  error: (...args: any[]) => console.error("[SlideViewer]", ...args),
-  info: (...args: any[]) => console.info("[SlideViewer]", ...args),
-};
-
 function getAuthToken(): string | null {
   return localStorage.getItem("access_token");
 }
@@ -63,7 +58,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
           if (!data.is_processed && retryCount < maxRetries) {
             retryCount++;
-            logger.info(`Slide still processing, retrying (${retryCount}/${maxRetries})…`);
             timerId = setTimeout(fetchMetadata, retryDelay);
             return;
           }
@@ -75,9 +69,8 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           });
           setLoading(false);
         })
-        .catch(err => {
+        .catch(() => {
           if (!active) return;
-          logger.error("Failed to load slide metadata:", err);
           setError("Ошибка загрузки метаданных препарата");
           setLoading(false);
         });
@@ -139,13 +132,28 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
       loadTilesWithAjax: true,
       ajaxHeaders: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+      tileRetryMax: 3,
+      tileRetryDelay: 1000,
+    } as any);
 
     osdViewerRef.current = viewer;
     setViewerInstance(viewer);
 
-    viewer.addHandler("tile-load-failed", (event: any) => {
-      logger.error("Tile load failed:", event.message, event.tile?.url);
+    let refreshingTiles = false;
+    viewer.addHandler("tile-load-failed", async () => {
+      if (refreshingTiles) return;
+      refreshingTiles = true;
+      try {
+        await axios.get(`/api/v1/slides/${slideId}`);
+        const refreshedToken = getAuthToken();
+        (viewer as any).setAjaxHeaders(
+          refreshedToken ? { Authorization: `Bearer ${refreshedToken}` } : {},
+          true,
+        );
+        viewer.forceRedraw();
+      } finally {
+        refreshingTiles = false;
+      }
     });
 
     return () => {
@@ -235,13 +243,11 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
 
   return (
     <Box position="relative" width="100%" height="100%" bgcolor="#ffffff" overflow="hidden">
-      {}
       <div
         ref={viewerRef}
         style={{ width: "100%", height: "100%", backgroundColor: "#f8fafc" }}
       />
 
-      {}
       {metadata && (
         <DrawingOverlay
           slideId={slideId}
@@ -254,7 +260,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         />
       )}
 
-      {}
       <Box sx={{ position: "absolute", top: 16, left: 16, zIndex: 100, pointerEvents: "none" }}>
         <Paper
           elevation={0}
@@ -276,7 +281,6 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         </Paper>
       </Box>
 
-      {}
       <Box position="absolute" bottom={16} left="50%" sx={{ transform: "translateX(-50%)", zIndex: 100 }}>
         <Paper
           elevation={0}

@@ -14,15 +14,9 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
-    """
-    SQLAlchemy Declarative Base for 2.0 style mapping.
-    """
     pass
 
 def get_db():
-    """
-    FastAPI dependency that yields a database session.
-    """
     db = SessionLocal()
     try:
         yield db
