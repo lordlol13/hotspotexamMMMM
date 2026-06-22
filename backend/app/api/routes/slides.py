@@ -48,12 +48,16 @@ def list_course_slides(course_id: uuid.UUID, db: Session = Depends(get_db), curr
 
 @router.get("/{slide_id}", response_model=SlideResponse)
 def get_slide_metadata(slide_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-    return SlideService.get_slide(db, slide_id)
+    slide = SlideService.get_slide(db, slide_id)
+    if slide.is_processed and not os.path.exists(slide.file_path):
+        raise NotFoundException("Файл препарата отсутствует на сервере (был стерт при перезапуске). Пожалуйста, удалите препарат и загрузите заново.")
+    return slide
 
 @router.get("/{slide_id}/dzi")
 def get_slide_dzi(slide_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     slide = SlideService.get_slide(db, slide_id)
-
+    if not os.path.exists(slide.file_path):
+        raise NotFoundException("Файл препарата отсутствует на сервере")
     from app.utils.svs_processor import UnifiedSlideProcessor
     processor = UnifiedSlideProcessor(slide.file_path)
     xml_content = processor.get_dzi_xml()

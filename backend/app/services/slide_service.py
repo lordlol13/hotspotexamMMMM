@@ -133,8 +133,15 @@ class SlideService:
             Slide.content_sha256 == content_sha256,
         ).first()
         if duplicate:
+            if not os.path.exists(duplicate.file_path):
+                dest_dir = os.path.dirname(duplicate.file_path)
+                os.makedirs(dest_dir, exist_ok=True)
+                shutil.copy2(file_path, duplicate.file_path)
+                duplicate.is_processed = False
+                db.commit()
+                background_tasks.add_task(cls.process_slide, duplicate.id, db)
             shutil.rmtree(cls.get_slide_dir(slide_id), ignore_errors=True)
-            raise BadRequestException("This file is already uploaded to the course")
+            return duplicate
 
         slide = Slide(
             id=slide_id,
@@ -153,6 +160,20 @@ class SlideService:
             db.commit()
         except IntegrityError:
             db.rollback()
+            duplicate = db.query(Slide).filter(
+                Slide.course_id == course_id,
+                Slide.content_sha256 == content_sha256,
+            ).first()
+            if duplicate:
+                if not os.path.exists(duplicate.file_path):
+                    dest_dir = os.path.dirname(duplicate.file_path)
+                    os.makedirs(dest_dir, exist_ok=True)
+                    shutil.copy2(file_path, duplicate.file_path)
+                    duplicate.is_processed = False
+                    db.commit()
+                    background_tasks.add_task(cls.process_slide, duplicate.id, db)
+                shutil.rmtree(cls.get_slide_dir(slide_id), ignore_errors=True)
+                return duplicate
             shutil.rmtree(cls.get_slide_dir(slide_id), ignore_errors=True)
             raise BadRequestException("This file is already uploaded to the course")
         db.refresh(slide)
@@ -189,6 +210,9 @@ class SlideService:
         slide = cls.get_slide(db, slide_id)
         if not slide.is_processed:
             raise BadRequestException("Slide is not processed yet")
+
+        if not os.path.exists(slide.file_path):
+            raise NotFoundException("Файл препарата отсутствует на сервере")
 
         if level < 0 or col < 0 or row < 0:
             raise BadRequestException("Invalid tile coordinates")

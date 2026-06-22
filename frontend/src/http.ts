@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || "";
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? "" : "https://backend-production-ec1c.up.railway.app");
 
 let refreshRequest: Promise<string> | null = null;
 

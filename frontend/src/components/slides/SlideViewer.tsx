@@ -69,9 +69,9 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
           });
           setLoading(false);
         })
-        .catch(() => {
+        .catch(err => {
           if (!active) return;
-          setError("Ошибка загрузки метаданных препарата");
+          setError(err.response?.data?.detail || "Ошибка загрузки метаданных препарата");
           setLoading(false);
         });
     };
