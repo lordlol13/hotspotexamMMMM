@@ -130,3 +130,29 @@ def update_current_user_password(
 ):
     AuthService.update_password(db, current_user.id, schema)
     return {"message": "Password updated successfully"}
+
+@router.post("/purge-database")
+def purge_database(secret_key: str = Query(...), db: Session = Depends(get_db)):
+    if secret_key != settings.JWT_SECRET:
+        raise ForbiddenException("Invalid secret key")
+    import os
+    import shutil
+    from sqlalchemy import text
+    try:
+        db.execute(text("TRUNCATE TABLE audit_logs, notifications, slide_view_logs, annotations, attempt_answers, exam_attempts, exam_questions, exam_retakes, regions, question_options, exams, exam_groups, exam_students, course_enrollments, course_groups, courses, groups, slides CASCADE;"))
+        db.execute(text("DELETE FROM students;"))
+        admin_user = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
+        if admin_user:
+            db.execute(text("DELETE FROM teachers WHERE id != :admin_id;"), {"admin_id": admin_user.id})
+            db.execute(text("DELETE FROM users WHERE id != :admin_id;"), {"admin_id": admin_user.id})
+        else:
+            db.execute(text("DELETE FROM teachers;"))
+            db.execute(text("DELETE FROM users;"))
+        db.commit()
+        uploads_slides_dir = os.path.join(settings.UPLOAD_DIR, "slides")
+        if os.path.exists(uploads_slides_dir):
+            shutil.rmtree(uploads_slides_dir, ignore_errors=True)
+        return {"status": "success"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
