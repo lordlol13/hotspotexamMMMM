@@ -132,9 +132,12 @@ def update_current_user_password(
     return {"message": "Password updated successfully"}
 
 @router.post("/purge-database")
-def purge_database(secret_key: str = Query(...), db: Session = Depends(get_db)):
-    if secret_key != settings.JWT_SECRET:
-        raise ForbiddenException("Invalid secret key")
+def purge_database(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.email != settings.ADMIN_EMAIL:
+        raise ForbiddenException("Access denied")
     import os
     import shutil
     from sqlalchemy import text
